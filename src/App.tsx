@@ -8,16 +8,27 @@ import { Footer } from './components/Footer';
 import { Registration } from './types';
 import { subscribeToRegistrations } from './firebase/registrations';
 
+function checkIsAdminRoute(): boolean {
+  if (typeof window === 'undefined') return false;
+  const pathname = window.location.pathname.toLowerCase().replace(/\/+$/, '');
+  const hash = window.location.hash.toLowerCase();
+  const searchParams = new URLSearchParams(window.location.search);
+
+  return (
+    pathname === '/admin' ||
+    pathname.endsWith('/admin') ||
+    hash === '#admin' ||
+    hash === '#/admin' ||
+    searchParams.get('page')?.toLowerCase() === 'admin' ||
+    searchParams.get('tab')?.toLowerCase() === 'admin' ||
+    searchParams.has('admin')
+  );
+}
+
 export default function App() {
   // Routing state
   const [currentPath, setCurrentPath] = useState<string>(() => {
-    const pathname = window.location.pathname;
-    const hash = window.location.hash;
-    const searchParams = new URLSearchParams(window.location.search);
-    if (pathname === '/admin' || hash === '#admin' || searchParams.get('page') === 'admin' || searchParams.get('tab') === 'admin') {
-      return '/admin';
-    }
-    return '/';
+    return checkIsAdminRoute() ? '/admin' : '/';
   });
 
   // Registrations state from Firebase Firestore
@@ -50,14 +61,7 @@ export default function App() {
 
   useEffect(() => {
     const handleLocationChange = () => {
-      const pathname = window.location.pathname;
-      const hash = window.location.hash;
-      const searchParams = new URLSearchParams(window.location.search);
-      if (pathname === '/admin' || hash === '#admin' || searchParams.get('page') === 'admin' || searchParams.get('tab') === 'admin') {
-        setCurrentPath('/admin');
-      } else {
-        setCurrentPath('/');
-      }
+      setCurrentPath(checkIsAdminRoute() ? '/admin' : '/');
     };
 
     window.addEventListener('popstate', handleLocationChange);
