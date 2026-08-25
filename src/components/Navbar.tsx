@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Shield, ArrowLeft } from 'lucide-react';
+import { Users } from 'lucide-react';
 
 interface NavbarProps {
   currentPath: string;
@@ -55,23 +55,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attende
                 <span className="w-2 h-2 rounded-full bg-[#00A86B] animate-pulse" />
                 <Users className="w-3.5 h-3.5 text-[#0038A8]" />
                 <span>{attendeeCount} Registered</span>
-              </div>
-            )}
-
-            {/* If on Admin page, provide an Admin indicator and back button */}
-            {isAdmin && (
-              <div className="flex items-center gap-2">
-                <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0038A8]/10 text-[#0038A8] rounded-xl text-xs font-black uppercase tracking-wider">
-                  <Shield className="w-3.5 h-3.5" />
-                  Admin Mode
-                </span>
-                <button
-                  onClick={() => onNavigate('/')}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Public Portal</span>
-                </button>
               </div>
             )}
           </div>
