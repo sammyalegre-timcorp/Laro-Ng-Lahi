@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Flag } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 interface FooterProps {
   currentPath: string;
@@ -41,19 +41,6 @@ export const Footer: React.FC<FooterProps> = ({ currentPath, onNavigate }) => {
             </button>
             <span>para sa Palarong Pinoy</span>
           </div>
-
-          {isAdmin && (
-            <>
-              <span className="text-slate-200">|</span>
-              <button
-                onClick={() => onNavigate('/')}
-                className="text-[#0038A8] hover:text-blue-900 font-black uppercase tracking-widest text-[11px] flex items-center gap-1 cursor-pointer"
-              >
-                <Flag className="w-3.5 h-3.5" />
-                <span>Bumalik sa Registration</span>
-              </button>
-            </>
-          )}
         </div>
       </div>
 
