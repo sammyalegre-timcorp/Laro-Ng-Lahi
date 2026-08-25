@@ -9,47 +9,15 @@ import { Registration } from './types';
 import { subscribeToRegistrations } from './firebase/registrations';
 
 export default function App() {
-  // Helper to check if URL or storage requests the admin view
-  const checkIfAdminRoute = (): boolean => {
-    try {
-      const pathname = window.location.pathname;
-      const hash = window.location.hash.toLowerCase();
-      const search = window.location.search.toLowerCase();
-      const searchParams = new URLSearchParams(window.location.search);
-
-      // Direct URL matching: /admin, /admin.html, etc.
-      if (pathname.includes('/admin')) return true;
-
-      // Hash route matching: #admin, #/admin, #portal, etc.
-      if (hash.includes('admin') || hash.includes('portal')) return true;
-
-      // Query parameters: ?admin, ?page=admin, ?tab=admin, ?view=admin, ?p=admin, ?mode=admin
-      if (
-        search.includes('admin') ||
-        searchParams.get('page') === 'admin' ||
-        searchParams.get('tab') === 'admin' ||
-        searchParams.get('view') === 'admin' ||
-        searchParams.get('portal') === 'admin' ||
-        searchParams.get('mode') === 'admin' ||
-        searchParams.get('p') === 'admin'
-      ) {
-        return true;
-      }
-
-      // LocalStorage session memory (allows users to reload or reopen admin directly)
-      const storedView = localStorage.getItem('palaro_view_preference');
-      if (storedView === 'admin' && !search.includes('view=register') && !hash.includes('register')) {
-        return true;
-      }
-    } catch (e) {
-      // safe fallback
-    }
-    return false;
-  };
-
   // Routing state
   const [currentPath, setCurrentPath] = useState<string>(() => {
-    return checkIfAdminRoute() ? '/admin' : '/';
+    const pathname = window.location.pathname;
+    const hash = window.location.hash;
+    const searchParams = new URLSearchParams(window.location.search);
+    if (pathname === '/admin' || hash === '#admin' || searchParams.get('page') === 'admin' || searchParams.get('tab') === 'admin') {
+      return '/admin';
+    }
+    return '/';
   });
 
   // Registrations state from Firebase Firestore
@@ -65,10 +33,8 @@ export default function App() {
     setCurrentPath(path);
     try {
       if (path === '/admin') {
-        localStorage.setItem('palaro_view_preference', 'admin');
         window.history.pushState({}, '', '/admin');
       } else {
-        localStorage.setItem('palaro_view_preference', 'register');
         window.history.pushState({}, '', '/');
       }
     } catch (e) {
@@ -84,7 +50,10 @@ export default function App() {
 
   useEffect(() => {
     const handleLocationChange = () => {
-      if (checkIfAdminRoute()) {
+      const pathname = window.location.pathname;
+      const hash = window.location.hash;
+      const searchParams = new URLSearchParams(window.location.search);
+      if (pathname === '/admin' || hash === '#admin' || searchParams.get('page') === 'admin' || searchParams.get('tab') === 'admin') {
         setCurrentPath('/admin');
       } else {
         setCurrentPath('/');
@@ -93,23 +62,11 @@ export default function App() {
 
     window.addEventListener('popstate', handleLocationChange);
     window.addEventListener('hashchange', handleLocationChange);
-
-    // Global keyboard shortcut to access Admin Portal directly: (Alt + A or Ctrl + Shift + A)
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.altKey && (e.key === 'a' || e.key === 'A')) || (e.ctrlKey && e.shiftKey && (e.key === 'a' || e.key === 'A'))) {
-        e.preventDefault();
-        navigate(currentPath === '/admin' ? '/' : '/admin');
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
     return () => {
       window.removeEventListener('popstate', handleLocationChange);
       window.removeEventListener('hashchange', handleLocationChange);
-      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [currentPath]);
+  }, []);
 
   // Real-time Firestore Subscription
   useEffect(() => {
