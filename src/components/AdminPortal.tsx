@@ -665,13 +665,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
                         {/* Medical Notes */}
                         <td className="p-4">
-                          {attendee.medicalNotes ? (
+                          {attendee.medicalNotes && attendee.medicalNotes.trim().toUpperCase() !== 'N/A' && attendee.medicalNotes.trim().toUpperCase() !== 'NONE' ? (
                             <div className="flex items-center gap-1.5 text-xs text-red-700 bg-red-50 p-2 rounded-xl border border-red-100 max-w-[220px]">
                               <HeartPulse className="w-3.5 h-3.5 shrink-0" />
                               <span className="truncate">{attendee.medicalNotes}</span>
                             </div>
                           ) : (
-                            <span className="text-slate-400 text-xs">-</span>
+                            <span className="text-slate-400 text-xs font-mono font-medium">
+                              {attendee.medicalNotes ? attendee.medicalNotes : 'N/A'}
+                            </span>
                           )}
                         </td>
 

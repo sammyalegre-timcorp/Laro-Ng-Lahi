@@ -171,12 +171,24 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
                   </select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">Medical / Health Notes</label>
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500">
+                      Medical / Health Notes <span className="text-[#CE1126]">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, medicalNotes: 'N/A' })}
+                      className="text-[10px] font-bold text-[#0038A8] hover:underline"
+                    >
+                      I-set bilang "N/A"
+                    </button>
+                  </div>
                   <textarea
                     rows={2}
                     value={formData.medicalNotes || ''}
                     onChange={e => setFormData({ ...formData, medicalNotes: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-[#0038A8] outline-hidden"
+                    placeholder='Hal. Asthma, knee injury, o "N/A" kung walang sakit'
+                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-[#0038A8] outline-hidden text-sm"
                   />
                 </div>
               </div>
@@ -230,7 +242,7 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
               </div>
 
               {/* Medical Notes */}
-              {attendee.medicalNotes ? (
+              {attendee.medicalNotes && attendee.medicalNotes.trim().toUpperCase() !== 'N/A' && attendee.medicalNotes.trim().toUpperCase() !== 'NONE' ? (
                 <div className="p-4 rounded-2xl bg-red-50/60 border border-red-200 text-xs">
                   <div className="flex items-center gap-1.5 font-bold mb-1 text-red-700">
                     <HeartPulse className="w-4 h-4" />
@@ -239,8 +251,9 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
                   <p className="text-slate-700 text-sm font-medium">{attendee.medicalNotes}</p>
                 </div>
               ) : (
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-400">
-                  Walang nakasaad na medical restrictions.
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600 flex items-center gap-2">
+                  <HeartPulse className="w-4 h-4 text-slate-400 shrink-0" />
+                  <span>Medical Notes: <strong className="text-slate-800 font-mono">N/A</strong> (Walang iniindang sakit o injury)</span>
                 </div>
               )}
 

@@ -54,6 +54,11 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
       return;
     }
 
+    if (!formData.medicalNotes.trim()) {
+      setErrorMessage('Paki-lagay ang Medical Notes o isulat ang "N/A" kung walang iniindang kondisyon sa kalusugan.');
+      return;
+    }
+
     try {
       setLoading(true);
       const submissionPayload: Omit<Registration, 'id' | 'createdAt'> = {
@@ -217,17 +222,31 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
 
             {/* Medical Notes / Physical Restrictions */}
             <div>
-              <label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5 tracking-widest flex items-center gap-1.5">
-                <HeartPulse className="w-3.5 h-3.5 text-[#CE1126]" />
-                <span>Medical Notes / Kondisyon sa Kalusugan <span className="text-slate-400 font-normal">(Opsyonal)</span></span>
-              </label>
+              <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-1.5">
+                  <HeartPulse className="w-3.5 h-3.5 text-[#CE1126]" />
+                  <span>Medical Notes / Kalusugan <span className="text-[#CE1126]">*</span></span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, medicalNotes: 'N/A' })}
+                  className="text-[10px] font-bold text-[#0038A8] hover:text-blue-900 bg-[#0038A8]/10 hover:bg-[#0038A8]/20 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                  title="Pindutin ito kung walang iniindang sakit o injury"
+                >
+                  I-set bilang "N/A" (Walang Kondisyon)
+                </button>
+              </div>
               <textarea
                 rows={2}
-                placeholder="Hal. May asthma, bawal sa matinding pagod, may dating knee injury, atbp. (Opsyonal para sa first aid)"
+                required
+                placeholder='Hal. May asthma, bawal sa matinding pagod, knee injury. Kung wala, isulat ang "N/A"'
                 value={formData.medicalNotes}
                 onChange={e => setFormData({ ...formData, medicalNotes: e.target.value })}
                 className="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-[#0038A8] focus:bg-white focus:outline-none transition-colors font-medium text-slate-900 text-sm"
               />
+              <p className="text-[10px] text-slate-400 mt-1">
+                Kailangan para sa first aid team. Kung walang iniindang sakit o injury, isulat lamang ang <strong>"N/A"</strong>.
+              </p>
             </div>
 
             {/* Submit Action Button */}
