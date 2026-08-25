@@ -1,0 +1,6 @@
+{
+  "name": "Laro ng Lahi 2026 - Palarong Pinoy Registration & Admin Portal",
+  "description": "Filipino-themed employee registration system and real-time admin management portal with balanced team allocation, live attendee directory, and Excel/CSV export for company Laro ng Lahi events.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
