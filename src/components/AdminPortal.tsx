@@ -19,7 +19,9 @@ import {
   ShieldCheck,
   HeartPulse,
   CheckSquare,
-  Square
+  Square,
+  Link,
+  Copy
 } from 'lucide-react';
 import { Registration, DEFAULT_TEAMS } from '../types';
 import { exportToExcel, exportToCSV, getAgeBracket } from '../utils/exportData';
@@ -177,6 +179,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     }, 4000);
   };
 
+  const handleCopyDirectLink = () => {
+    try {
+      const url = `${window.location.origin}${window.location.pathname.replace(/\/$/, '')}/#admin`;
+      navigator.clipboard.writeText(url);
+      showToast('Na-kopya ang Direct Admin Link sa clipboard! Maaari itong i-bookmark o i-open direkta.');
+    } catch (e) {
+      showToast('URL: ' + window.location.origin + '/#admin');
+    }
+  };
+
   const handleConfirmSingleDelete = async () => {
     if (!attendeeToDelete?.id) return;
     try {
@@ -253,6 +265,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
         {/* Primary Action Buttons */}
         <div className="flex flex-wrap items-center gap-2.5">
+          {/* Excel Export */}
+          <button
+            onClick={handleCopyDirectLink}
+            className="px-3.5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border border-slate-200"
+            title="Kopyahin ang direct link para buksan ang Admin page kahit hindi binubuksan ang registration"
+          >
+            <Link className="w-4 h-4 text-[#0038A8]" />
+            <span className="hidden sm:inline">Admin Direct Link</span>
+          </button>
+
           {/* Excel Export */}
           <button
             onClick={() => exportToExcel(registrations)}
