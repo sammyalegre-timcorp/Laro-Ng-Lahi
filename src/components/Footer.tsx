@@ -30,17 +30,18 @@ export const Footer: React.FC<FooterProps> = ({ currentPath, onNavigate }) => {
         <div className="flex items-center gap-4 text-slate-500">
           <div className="flex items-center gap-1.5 text-slate-400 font-medium select-none">
             <span>Gawa nang may</span>
-            <button
-              type="button"
-              onClick={() => onNavigate(isAdmin ? '/' : '/admin')}
-              aria-label={isAdmin ? 'Pumunta sa Registration' : 'Admin Portal'}
-              title={isAdmin ? 'Bumalik sa Registration' : 'Admin Portal'}
-              className="inline-flex items-center justify-center p-0.5 rounded-full hover:scale-125 active:scale-90 transition-transform cursor-pointer focus:outline-none"
-            >
-              <Heart className="w-3.5 h-3.5 text-[#CE1126] fill-[#CE1126]" />
-            </button>
+            <Heart className="w-3.5 h-3.5 text-[#CE1126] fill-[#CE1126]" />
             <span>para sa Palarong Pinoy</span>
           </div>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => onNavigate('/')}
+              className="text-xs text-[#0038A8] hover:underline font-bold"
+            >
+              ← Bumalik sa Registration
+            </button>
+          )}
         </div>
       </div>
 

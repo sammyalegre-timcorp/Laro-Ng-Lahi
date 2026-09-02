@@ -8,11 +8,13 @@ import {
   HeartPulse,
   Edit3
 } from 'lucide-react';
-import { Registration, DEFAULT_TEAMS } from '../types';
+import { Registration, Team, DEFAULT_TEAMS } from '../types';
 import { updateRegistration, deleteRegistration } from '../firebase/registrations';
+import { getTeamBadgeStyle } from '../utils/teamUtils';
 
 interface AttendeeDetailsModalProps {
   attendee: Registration;
+  teams?: Team[];
   onClose: () => void;
   onUpdated?: () => void;
   onDeleted?: () => void;
@@ -20,6 +22,7 @@ interface AttendeeDetailsModalProps {
 
 export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
   attendee,
+  teams = DEFAULT_TEAMS,
   onClose,
   onUpdated,
   onDeleted
@@ -152,8 +155,8 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
                     className="w-full px-3.5 py-2.5 rounded-xl border-2 border-blue-200 bg-blue-50/50 font-bold text-[#0038A8] focus:border-[#0038A8] outline-hidden cursor-pointer"
                   >
                     <option value="">(Unassigned)</option>
-                    {DEFAULT_TEAMS.map(t => (
-                      <option key={t.id} value={t.name}>{t.name}</option>
+                    {teams.map(t => (
+                      <option key={t.id} value={t.name}>{t.iconName ? `${t.iconName} ` : ''}{t.name}</option>
                     ))}
                   </select>
                 </div>

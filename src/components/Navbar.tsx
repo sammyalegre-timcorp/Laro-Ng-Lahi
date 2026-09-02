@@ -52,8 +52,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attende
 
           {/* Right Side Header Controls */}
           <div className="flex items-center gap-3">
-            {/* Live attendee count indicator */}
-            {attendeeCount > 0 && (
+            {/* Live attendee count indicator - only on admin view */}
+            {isAdmin && attendeeCount > 0 && (
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 text-xs font-bold">
                 <span className="w-2 h-2 rounded-full bg-[#00A86B] animate-pulse" />
                 <Users className="w-3.5 h-3.5 text-[#0038A8]" />

@@ -19,18 +19,22 @@ import {
   ShieldCheck,
   HeartPulse,
   CheckSquare,
-  Square
+  Square,
+  Palette
 } from 'lucide-react';
-import { Registration, DEFAULT_TEAMS } from '../types';
+import { Registration, Team, DEFAULT_TEAMS } from '../types';
 import { exportToExcel, exportToCSV, getAgeBracket } from '../utils/exportData';
 import { AttendeeDetailsModal } from './AttendeeDetailsModal';
 import { TeamBalancerModal } from './TeamBalancerModal';
 import { PrintableRosterModal } from './PrintableRosterModal';
+import { TeamManagementModal } from './TeamManagementModal';
 import { GameRulesGuide } from './GameRulesGuide';
 import { updateRegistration, deleteRegistration, batchDeleteRegistrations } from '../firebase/registrations';
+import { getTeamBadgeStyle } from '../utils/teamUtils';
 
 interface AdminPortalProps {
   registrations: Registration[];
+  teams?: Team[];
   loading: boolean;
   error?: string | null;
   onRefresh?: () => void;
@@ -38,6 +42,7 @@ interface AdminPortalProps {
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({
   registrations,
+  teams = DEFAULT_TEAMS,
   loading,
   error
 }) => {
@@ -46,6 +51,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [selectedAttendee, setSelectedAttendee] = useState<Registration | null>(null);
   const [isBalancerOpen, setIsBalancerOpen] = useState(false);
   const [isPrintableRosterOpen, setIsPrintableRosterOpen] = useState(false);
+  const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false);
 
   // Deletion States
   const [attendeeToDelete, setAttendeeToDelete] = useState<Registration | null>(null);
@@ -285,6 +291,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             <span>Export CSV</span>
           </button>
 
+          {/* Teams & Colors Management Launch */}
+          <button
+            onClick={() => setIsTeamManagementOpen(true)}
+            className="px-4 py-3 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-black uppercase tracking-wider shadow-md hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
+            title="I-customize ang Pangalan at Kulay ng bawat Koponan"
+          >
+            <Palette className="w-4 h-4 text-[#FFCD00]" />
+            <span>Teams & Kulay</span>
+          </button>
+
           {/* Team Balancer Modal Launch */}
           <button
             onClick={() => setIsBalancerOpen(true)}
@@ -506,8 +522,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               >
                 <option value="all">Lahat ng Koponan</option>
                 <option value="unassigned">Walang Team (Unassigned)</option>
-                {DEFAULT_TEAMS.map(t => (
-                  <option key={t.id} value={t.name}>{t.name}</option>
+                {teams.map(t => (
+                  <option key={t.id} value={t.name}>{t.iconName ? `${t.iconName} ` : ''}{t.name}</option>
                 ))}
               </select>
 
@@ -657,20 +673,30 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
                         {/* Team Assignment Dropdown / Pill */}
                         <td className="p-4">
-                          <select
-                            value={attendee.assignedTeam || ''}
-                            onChange={e => handleQuickTeamAssign(attendee.id!, e.target.value)}
-                            className={`text-xs font-bold py-1.5 px-3 rounded-xl border-2 outline-none transition-all cursor-pointer ${
-                              attendee.assignedTeam
-                                ? 'bg-[#0038A8]/10 border-[#0038A8]/30 text-[#0038A8]'
-                                : 'bg-slate-50 border-slate-200 text-slate-400'
-                            }`}
-                          >
-                            <option value="">(Unassigned)</option>
-                            {DEFAULT_TEAMS.map(t => (
-                              <option key={t.id} value={t.name}>{t.name}</option>
-                            ))}
-                          </select>
+                          {(() => {
+                            const assignedTeamObj = teams.find(t => t.name === attendee.assignedTeam);
+                            const badgeStyle = assignedTeamObj ? getTeamBadgeStyle(assignedTeamObj.color) : undefined;
+
+                            return (
+                              <select
+                                value={attendee.assignedTeam || ''}
+                                onChange={e => handleQuickTeamAssign(attendee.id!, e.target.value)}
+                                style={badgeStyle}
+                                className={`text-xs font-bold py-1.5 px-3 rounded-xl border-2 outline-none transition-all cursor-pointer ${
+                                  !attendee.assignedTeam
+                                    ? 'bg-slate-50 border-slate-200 text-slate-400'
+                                    : 'font-black'
+                                }`}
+                              >
+                                <option value="">(Unassigned)</option>
+                                {teams.map(t => (
+                                  <option key={t.id} value={t.name} style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>
+                                    {t.iconName ? `${t.iconName} ` : ''}{t.name}
+                                  </option>
+                                ))}
+                              </select>
+                            );
+                          })()}
                         </td>
 
                         {/* Medical Notes */}
@@ -852,6 +878,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       {selectedAttendee && (
         <AttendeeDetailsModal
           attendee={selectedAttendee}
+          teams={teams}
           onClose={() => setSelectedAttendee(null)}
           onUpdated={() => {
             showToast('Na-update ang impormasyon ng kalahok.');
@@ -866,6 +893,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       {isBalancerOpen && (
         <TeamBalancerModal
           registrations={registrations}
+          teams={teams}
           onClose={() => setIsBalancerOpen(false)}
           onSuccess={() => {
             setIsBalancerOpen(false);
@@ -877,7 +905,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       {isPrintableRosterOpen && (
         <PrintableRosterModal
           registrations={registrations}
+          teams={teams}
           onClose={() => setIsPrintableRosterOpen(false)}
+        />
+      )}
+
+      {/* Teams & Colors Management Modal */}
+      {isTeamManagementOpen && (
+        <TeamManagementModal
+          teams={teams}
+          registrations={registrations}
+          onClose={() => setIsTeamManagementOpen(false)}
+          onSuccess={() => {
+            showToast('Na-update ang mga Teams at Kulay!');
+          }}
         />
       )}
     </div>

@@ -17,24 +17,34 @@ import { batchUpdateTeams } from '../firebase/registrations';
 
 interface TeamBalancerModalProps {
   registrations: Registration[];
+  teams?: Team[];
   onClose: () => void;
   onSuccess: () => void;
 }
 
-const AVAILABLE_GROUP_COUNTS = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-
 export const TeamBalancerModal: React.FC<TeamBalancerModalProps> = ({
   registrations,
+  teams = DEFAULT_TEAMS,
   onClose,
   onSuccess
 }) => {
-  const [numTeams, setNumTeams] = useState<number>(4);
+  const [numTeams, setNumTeams] = useState<number>(() => Math.min(4, Math.max(2, teams.length)));
   const [isSaving, setIsSaving] = useState(false);
 
-  // Selected teams subset (supports up to 10 teams)
+  // Available counts based on current teams length
+  const availableCounts = useMemo(() => {
+    const max = Math.max(2, teams.length);
+    const counts: number[] = [];
+    for (let i = 2; i <= max; i++) {
+      counts.push(i);
+    }
+    return counts;
+  }, [teams.length]);
+
+  // Selected teams subset
   const currentTeams = useMemo(() => {
-    return DEFAULT_TEAMS.slice(0, numTeams);
-  }, [numTeams]);
+    return teams.slice(0, numTeams);
+  }, [teams, numTeams]);
 
   // Working state of assignments: registrantId -> teamName
   const [assignments, setAssignments] = useState<Record<string, string>>(() => {
@@ -73,7 +83,7 @@ export const TeamBalancerModal: React.FC<TeamBalancerModalProps> = ({
 
   const handleGroupCountChange = (count: number) => {
     setNumTeams(count);
-    const newTeams = DEFAULT_TEAMS.slice(0, count);
+    const newTeams = teams.slice(0, count);
     const newAssignments = balanceTeams(registrations, newTeams);
     setAssignments(newAssignments);
   };
@@ -140,7 +150,7 @@ export const TeamBalancerModal: React.FC<TeamBalancerModalProps> = ({
               Pumili ng Bilang ng Groups:
             </span>
             <div className="flex flex-wrap items-center gap-1 bg-white p-1 rounded-2xl border border-amber-300 shadow-xs">
-              {AVAILABLE_GROUP_COUNTS.map(count => (
+              {availableCounts.map(count => (
                 <button
                   key={count}
                   onClick={() => handleGroupCountChange(count)}
@@ -151,7 +161,7 @@ export const TeamBalancerModal: React.FC<TeamBalancerModalProps> = ({
                   }`}
                   title={`${count} Groups / Teams`}
                 >
-                  {count} {count === 8 || count === 9 || count === 10 ? '⭐ ' : ''}Groups
+                  {count} {count >= 8 ? '⭐ ' : ''}Groups
                 </button>
               ))}
             </div>

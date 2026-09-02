@@ -5,8 +5,9 @@ import { RegistrationForm } from './components/RegistrationForm';
 import { RegistrationSuccess } from './components/RegistrationSuccess';
 import { AdminPortal } from './components/AdminPortal';
 import { Footer } from './components/Footer';
-import { Registration } from './types';
+import { Registration, Team, DEFAULT_TEAMS } from './types';
 import { subscribeToRegistrations } from './firebase/registrations';
+import { subscribeToTeams } from './firebase/teams';
 
 function checkIsAdminRoute(): boolean {
   if (typeof window === 'undefined') return false;
@@ -33,6 +34,7 @@ export default function App() {
 
   // Registrations state from Firebase Firestore
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [teams, setTeams] = useState<Team[]>(DEFAULT_TEAMS);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,10 +74,10 @@ export default function App() {
     };
   }, []);
 
-  // Real-time Firestore Subscription
+  // Real-time Firestore Subscription for Registrations
   useEffect(() => {
     setLoading(true);
-    const unsubscribe = subscribeToRegistrations(
+    const unsubscribeRegistrations = subscribeToRegistrations(
       (data) => {
         setRegistrations(data);
         setLoading(false);
@@ -88,7 +90,21 @@ export default function App() {
       }
     );
 
-    return () => unsubscribe();
+    const unsubscribeTeams = subscribeToTeams(
+      (data) => {
+        if (data && data.length > 0) {
+          setTeams(data);
+        }
+      },
+      (err) => {
+        console.error('Teams subscription error:', err);
+      }
+    );
+
+    return () => {
+      unsubscribeRegistrations();
+      unsubscribeTeams();
+    };
   }, []);
 
   const handleRegistrationSuccess = (newReg: Registration) => {
@@ -123,6 +139,7 @@ export default function App() {
             /* Separate Admin Page at /admin */
             <AdminPortal
               registrations={registrations}
+              teams={teams}
               loading={loading}
               error={error}
             />

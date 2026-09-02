@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { X, Printer } from 'lucide-react';
-import { Registration, DEFAULT_TEAMS } from '../types';
+import { Registration, Team, DEFAULT_TEAMS } from '../types';
 
 interface PrintableRosterModalProps {
   registrations: Registration[];
+  teams?: Team[];
   onClose: () => void;
 }
 
 export const PrintableRosterModal: React.FC<PrintableRosterModalProps> = ({
   registrations,
+  teams = DEFAULT_TEAMS,
   onClose
 }) => {
   const [filterTeam, setFilterTeam] = useState<string>('all');
@@ -62,8 +64,8 @@ export const PrintableRosterModal: React.FC<PrintableRosterModalProps> = ({
               className="text-xs px-3 py-1.5 rounded-xl border border-slate-300 bg-white font-medium text-slate-700 outline-hidden cursor-pointer"
             >
               <option value="all">Lahat ng Koponan (All Teams)</option>
-              {DEFAULT_TEAMS.map(t => (
-                <option key={t.id} value={t.name}>{t.name}</option>
+              {teams.map(t => (
+                <option key={t.id} value={t.name}>{t.iconName ? `${t.iconName} ` : ''}{t.name}</option>
               ))}
               <option value="unassigned">Unassigned Only</option>
             </select>
