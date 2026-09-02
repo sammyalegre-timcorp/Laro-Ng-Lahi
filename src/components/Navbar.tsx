@@ -26,11 +26,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attende
             onClick={() => onNavigate('/')}
             className="flex items-center gap-3.5 cursor-pointer group select-none"
           >
-            {/* Sun Medallion */}
-            <div className="w-12 h-12 bg-[#FFCD00] rounded-2xl flex items-center justify-center shadow-lg border-2 border-white group-hover:scale-105 transition-transform">
-              <svg viewBox="0 0 24 24" className="w-7 h-7 text-[#0038A8] fill-current">
-                <path d="M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z" />
-              </svg>
+            {/* Official Logo */}
+            <div className="w-13 h-13 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden bg-white shadow-sm border border-slate-100 p-0.5 shrink-0">
+              <img
+                src="https://marketing.timcorp.net.ph/hubfs/Employee%20Appreciation%202026/laro%20ng%20lahi%20logo.png"
+                alt="Laro ng Lahi Official Logo"
+                className="w-full h-full object-contain"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">

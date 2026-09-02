@@ -81,16 +81,32 @@ export const PrintableRosterModal: React.FC<PrintableRosterModalProps> = ({
         {/* Printable Area */}
         <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-8 print:p-0 print:overflow-visible">
           {/* Printable Header */}
-          <div className="text-center pb-4 border-b-2 border-slate-900 mb-6">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-wider">
-              LARO NG LAHI 2026 — PALARONG PINOY
-            </h1>
-            <p className="text-sm font-bold text-[#0038A8] uppercase tracking-widest mt-1">
-              Official Team Rosters & Attendance Sign-in Log
-            </p>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Nai-generate noong: {new Date().toLocaleString('en-PH')} • Kabuuang Kalahok: {filteredRegistrations.length}
-            </p>
+          <div className="flex items-center justify-between gap-4 pb-4 border-b-2 border-slate-900 mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-white rounded-xl p-1 border border-slate-200 flex items-center justify-center shrink-0">
+                <img
+                  src="https://marketing.timcorp.net.ph/hubfs/Employee%20Appreciation%202026/laro%20ng%20lahi%20logo.png"
+                  alt="Laro ng Lahi Logo"
+                  className="w-full h-full object-contain"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-wider">
+                  LARO NG LAHI 2026 — PALARONG PINOY
+                </h1>
+                <p className="text-xs sm:text-sm font-bold text-[#0038A8] uppercase tracking-widest mt-0.5">
+                  Official Team Rosters & Attendance Sign-in Log
+                </p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Nai-generate noong: {new Date().toLocaleString('en-PH')} • Kabuuang Kalahok: {filteredRegistrations.length}
+                </p>
+              </div>
+            </div>
+            <div className="text-right hidden sm:block">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">TIM Corp</span>
+              <span className="text-xs font-black text-slate-700">Official Roster Sheet</span>
+            </div>
           </div>
 
           {Object.keys(teamGroups).sort().map(teamName => {

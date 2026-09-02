@@ -68,8 +68,15 @@ export const RegistrationSuccess: React.FC<RegistrationSuccessProps> = ({
         {/* Top Header Strip */}
         <div className="bg-[#0038A8] text-white p-6 text-center relative">
           <div className="h-1.5 w-full bg-[#CE1126] absolute top-0 left-0"></div>
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <span className="text-xl">☀️</span>
+          <div className="flex items-center justify-center gap-3 mb-1">
+            <div className="w-10 h-10 bg-white rounded-xl p-0.5 shadow-sm flex items-center justify-center shrink-0">
+              <img
+                src="https://marketing.timcorp.net.ph/hubfs/Employee%20Appreciation%202026/laro%20ng%20lahi%20logo.png"
+                alt="Laro ng Lahi Logo"
+                className="w-full h-full object-contain"
+                referrerPolicy="no-referrer"
+              />
+            </div>
             <span className="text-xl sm:text-2xl font-black tracking-tight">
               LARO NG <span className="text-[#FFCD00]">LAHI</span>
             </span>

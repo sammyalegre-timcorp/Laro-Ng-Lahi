@@ -231,24 +231,34 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     <div className="space-y-8">
       {/* Top Banner & Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-[0_20px_50px_rgba(0,56,168,0.05)]">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="px-3 py-1 rounded-full bg-[#0038A8]/10 text-[#0038A8] text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              Event Operations & Admin Portal
-            </span>
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00A86B]/10 text-[#00A86B] text-xs font-black uppercase tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-[#00A86B] animate-pulse" />
-              <span>Live Firestore Sync</span>
-            </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-2xl p-1 shadow-sm border border-slate-200 flex items-center justify-center shrink-0">
+            <img
+              src="https://marketing.timcorp.net.ph/hubfs/Employee%20Appreciation%202026/laro%20ng%20lahi%20logo.png"
+              alt="Laro ng Lahi Official Logo"
+              className="w-full h-full object-contain"
+              referrerPolicy="no-referrer"
+            />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-[#0038A8] tracking-tight">
-            Palarong Pinoy <span className="text-[#CE1126]">Admin Hub</span>
-          </h1>
-          <div className="h-1 w-24 bg-[#FFCD00] rounded-full my-2"></div>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">
-            Real-time attendee directory, smart team balancer, at offline Excel/CSV data exports.
-          </p>
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="px-3 py-1 rounded-full bg-[#0038A8]/10 text-[#0038A8] text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Event Operations & Admin Portal
+              </span>
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00A86B]/10 text-[#00A86B] text-xs font-black uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-[#00A86B] animate-pulse" />
+                <span>Live Firestore Sync</span>
+              </div>
+            </div>
+            <h1 className="text-2xl sm:text-4xl font-black text-[#0038A8] tracking-tight">
+              Palarong Pinoy <span className="text-[#CE1126]">Admin Hub</span>
+            </h1>
+            <div className="h-1 w-24 bg-[#FFCD00] rounded-full my-2"></div>
+            <p className="text-xs sm:text-sm text-slate-500 font-medium">
+              Real-time attendee directory, smart team balancer, at offline Excel/CSV data exports.
+            </p>
+          </div>
         </div>
 
         {/* Primary Action Buttons */}

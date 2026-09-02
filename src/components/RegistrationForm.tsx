@@ -100,19 +100,29 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
       </div>
 
       {/* Header Banner */}
-      <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 relative z-10">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0038A8]/10 text-[#0038A8] text-xs font-black uppercase tracking-widest mb-3">
-            <span>🇵🇭</span>
-            <span>Official Employee Sports Registration</span>
+      <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10 bg-white/70 backdrop-blur-xs p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-2xl p-1.5 shadow-md border border-slate-100 flex items-center justify-center shrink-0">
+            <img
+              src="https://marketing.timcorp.net.ph/hubfs/Employee%20Appreciation%202026/laro%20ng%20lahi%20logo.png"
+              alt="Laro ng Lahi Official Logo"
+              className="w-full h-full object-contain"
+              referrerPolicy="no-referrer"
+            />
           </div>
-          <h1 className="text-4xl sm:text-6xl font-black text-[#0038A8] tracking-tighter leading-none mb-3">
-            LARO NG <span className="text-[#CE1126]">LAHI</span>
-          </h1>
-          <div className="h-1.5 w-32 bg-[#FFCD00] rounded-full mb-3"></div>
-          <p className="text-slate-500 font-medium uppercase tracking-[0.2em] text-xs sm:text-sm">
-            2026 Employee Inter-Departmental Sports & Cultural Festival
-          </p>
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0038A8]/10 text-[#0038A8] text-xs font-black uppercase tracking-widest mb-2">
+              <span>🇵🇭</span>
+              <span>Official Employee Sports Registration</span>
+            </div>
+            <h1 className="text-3xl sm:text-5xl font-black text-[#0038A8] tracking-tight leading-none mb-2">
+              LARO NG <span className="text-[#CE1126]">LAHI</span>
+            </h1>
+            <div className="h-1.5 w-28 bg-[#FFCD00] rounded-full mb-2"></div>
+            <p className="text-slate-500 font-semibold uppercase tracking-[0.15em] text-xs sm:text-sm">
+              2026 Employee Inter-Departmental Sports & Cultural Festival
+            </p>
+          </div>
         </div>
       </header>
 
