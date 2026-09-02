@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Registration } from '../types';
 import { submitRegistration } from '../firebase/registrations';
+import { RegistrationCountdown, REGISTRATION_DEADLINE_MS } from './RegistrationCountdown';
 
 interface RegistrationFormProps {
   onSuccess: (registrationData: Registration, docId: string) => void;
@@ -33,9 +34,16 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const isRegistrationClosed = Date.now() >= REGISTRATION_DEADLINE_MS;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    if (Date.now() >= REGISTRATION_DEADLINE_MS) {
+      setErrorMessage('Paumanhin, sarado na ang opisyal na rehistrasyon noong Setyembre 18, 2026, 7:00 PM PST.');
+      return;
+    }
 
     // Validations
     if (!formData.fullName.trim()) {
@@ -125,6 +133,9 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
           </div>
         </div>
       </header>
+
+      {/* Live Registration Countdown Timer (Philippine Standard Time) */}
+      <RegistrationCountdown />
 
       {/* Layout Grid: Left Form (7 cols) & Right Guide Panel (5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative z-10">
@@ -263,13 +274,18 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || isRegistrationClosed}
                 className="w-full py-5 bg-[#0038A8] text-white font-black text-base sm:text-lg rounded-xl shadow-xl shadow-blue-900/20 hover:bg-[#002d86] transition-all transform hover:-translate-y-1 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3 uppercase tracking-wider cursor-pointer"
               >
                 {loading ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     <span>Nirerehistro sa System...</span>
+                  </>
+                ) : isRegistrationClosed ? (
+                  <>
+                    <AlertCircle className="w-5 h-5 text-yellow-300" />
+                    <span>SARADO NA ANG REHISTRASYON</span>
                   </>
                 ) : (
                   <>
@@ -279,7 +295,9 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
                 )}
               </button>
               <p className="text-center text-[11px] text-slate-400 uppercase tracking-widest font-bold mt-3">
-                Agad na mai-save ang iyong data sa opisyal na listahan ng palaro
+                {isRegistrationClosed 
+                  ? 'Nagsara na ang rehistrasyon noong Setyembre 18, 2026, 7:00 PM PST'
+                  : 'Agad na mai-save ang iyong data sa opisyal na listahan ng palaro'}
               </p>
             </div>
           </form>
