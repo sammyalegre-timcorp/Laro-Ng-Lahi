@@ -9,10 +9,12 @@ import {
   CheckCircle2,
   AlertTriangle,
   ArrowRightLeft,
-  ChevronDown
+  ChevronDown,
+  Zap,
+  Heart
 } from 'lucide-react';
 import { Registration, Team, DEFAULT_TEAMS } from '../types';
-import { balanceTeams, computeTeamStats } from '../utils/teamBalancer';
+import { balanceTeams, computeTeamStats, getAgeTier, AGE_TIER_CONFIG } from '../utils/teamBalancer';
 import { batchUpdateTeams } from '../firebase/registrations';
 
 interface TeamBalancerModalProps {
@@ -69,12 +71,21 @@ export const TeamBalancerModal: React.FC<TeamBalancerModalProps> = ({
     return computeTeamStats(previewRegistrations, currentTeams);
   }, [previewRegistrations, currentTeams]);
 
-  // Calculate Overall Balance Metrics
-  const avgAges = teamStats.filter(t => t.members.length > 0).map(t => t.averageAge);
-  const maxAvgAge = avgAges.length ? Math.max(...avgAges) : 0;
-  const minAvgAge = avgAges.length ? Math.min(...avgAges) : 0;
-  const ageVariance = Math.round((maxAvgAge - minAvgAge) * 10) / 10;
-  const isWellBalanced = ageVariance <= 2.5;
+  // Calculate Overall Balance & Energy Spread Metrics
+  const activeTeams = useMemo(() => teamStats.filter(t => t.members.length > 0), [teamStats]);
+  const youngCounts = useMemo(() => activeTeams.map(t => t.ageDistribution.young), [activeTeams]);
+  const olderCounts = useMemo(() => activeTeams.map(t => t.ageDistribution.older), [activeTeams]);
+
+  const minYoung = youngCounts.length ? Math.min(...youngCounts) : 0;
+  const maxYoung = youngCounts.length ? Math.max(...youngCounts) : 0;
+  const youngSpreadGap = maxYoung - minYoung;
+
+  const minOlder = olderCounts.length ? Math.min(...olderCounts) : 0;
+  const maxOlder = olderCounts.length ? Math.max(...olderCounts) : 0;
+  const olderSpreadGap = maxOlder - minOlder;
+
+  // Well balanced if younger runners and older participants differ by at most 1 across teams
+  const isEnergySpreadBalanced = youngSpreadGap <= 1 && olderSpreadGap <= 1;
 
   const handleAutoBalance = () => {
     const newAssignments = balanceTeams(registrations, currentTeams);
@@ -127,11 +138,14 @@ export const TeamBalancerModal: React.FC<TeamBalancerModalProps> = ({
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xl font-black tracking-tight">
-                Smart Group Allocator & Team Balancer
+              <h3 className="text-xl font-black tracking-tight flex items-center gap-2">
+                <span>Smart Group Allocator & Team Balancer</span>
+                <span className="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-amber-400 text-slate-900">
+                  Energy & Age Balanced
+                </span>
               </h3>
               <p className="text-xs text-blue-200 font-medium">
-                Awtomatikong pagbabalanse ng Edad, Kasarian, at Departamento para sa patas na laban (2 hanggang 10 Koponan)!
+                Ikinakalat nang pantay ang mas bata (high energy sa laro) at nakatatanda (cheering & gabay) para walang dehado sa bilis o lakas!
               </p>
             </div>
           </div>
@@ -178,11 +192,11 @@ export const TeamBalancerModal: React.FC<TeamBalancerModalProps> = ({
           </div>
         </div>
 
-        {/* Balance Status Meter */}
+        {/* Balance Status Meter - Visualizing Energy and Age Spread */}
         <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 shrink-0 text-xs">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-slate-700">Kabuuang Kalahok:</span>
+              <span className="font-bold text-slate-700">Kalahok:</span>
               <span className="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-800 font-black">
                 {registrations.length} Tao
               </span>
@@ -193,19 +207,44 @@ export const TeamBalancerModal: React.FC<TeamBalancerModalProps> = ({
                 {numTeams} Active Teams
               </span>
             </div>
+            <div className="flex items-center gap-1.5 border-l border-slate-200 pl-3">
+              <span className="font-bold text-slate-700 flex items-center gap-1">
+                <Zap className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600" />
+                <span>Bata (&le;{AGE_TIER_CONFIG.youngMax}y):</span>
+              </span>
+              <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 font-black border border-emerald-200" title="Pantay na bilang ng mga mas bata na may lakas tumakbo sa mga laro">
+                {minYoung === maxYoung ? `${minYoung}` : `${minYoung}–${maxYoung}`} bawat team
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-slate-700 flex items-center gap-1">
+                <Heart className="w-3.5 h-3.5 text-purple-600 fill-purple-600" />
+                <span>Nakatatanda (&ge;{AGE_TIER_CONFIG.olderMin}y):</span>
+              </span>
+              <span className="px-2 py-0.5 rounded-md bg-purple-50 text-purple-800 font-black border border-purple-200" title="Pantay na bilang ng nakatatanda para sa suporta, cheering, at gabay">
+                {minOlder === maxOlder ? `${minOlder}` : `${minOlder}–${maxOlder}`} bawat team
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-700">Age Variance Gap:</span>
             <span
-              className={`px-2.5 py-0.5 rounded-full font-extrabold flex items-center gap-1 ${
-                isWellBalanced
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : 'bg-amber-100 text-amber-800'
+              className={`px-3 py-1 rounded-full font-extrabold flex items-center gap-1.5 shadow-2xs ${
+                isEnergySpreadBalanced
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                  : 'bg-amber-100 text-amber-800 border border-amber-300'
               }`}
             >
-              {isWellBalanced ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertTriangle className="w-3.5 h-3.5" />}
-              <span>{ageVariance} yrs gap (Patas at Balanse)</span>
+              {isEnergySpreadBalanced ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-amber-600" />
+              )}
+              <span>
+                {isEnergySpreadBalanced
+                  ? 'Patas ang Enerhiya & Edad sa Lahat ng Team'
+                  : 'May Bahagyang Agwat sa Distribusyon'}
+              </span>
             </span>
           </div>
         </div>
@@ -213,7 +252,7 @@ export const TeamBalancerModal: React.FC<TeamBalancerModalProps> = ({
         {/* Main Content - Dynamic Responsive Team Columns (Supporting 8, 9, 10 groups cleanly) */}
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-50/50">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {teamStats.map(({ team, members, averageAge, genderCount }) => (
+            {teamStats.map(({ team, members, averageAge, ageDistribution, genderCount }) => (
               <div
                 key={team.id}
                 className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm flex flex-col overflow-hidden hover:shadow-md transition-shadow"
@@ -228,19 +267,28 @@ export const TeamBalancerModal: React.FC<TeamBalancerModalProps> = ({
                   <p className="text-[10px] text-white/90 italic truncate mt-0.5">{team.tagline}</p>
                 </div>
 
-                {/* Team Metrics Summary */}
-                <div className="p-2.5 bg-slate-50 border-b border-slate-200 grid grid-cols-2 gap-1.5 text-center text-xs">
+                {/* Team Metrics Summary - Highlighting Energy/Age Tiers */}
+                <div className="p-2.5 bg-slate-50 border-b border-slate-200 grid grid-cols-3 gap-1.5 text-center text-xs">
                   <div className="bg-white p-1.5 rounded-xl border border-slate-200 shadow-2xs">
                     <span className="text-[9px] text-slate-400 uppercase font-black block">Members</span>
                     <span className="font-black text-slate-800 text-xs">{members.length}</span>
                   </div>
-                  <div className="bg-white p-1.5 rounded-xl border border-slate-200 shadow-2xs">
-                    <span className="text-[9px] text-slate-400 uppercase font-black block">Avg Age</span>
-                    <span className="font-black text-amber-700 text-xs">{averageAge || 0}y</span>
+                  <div className="bg-white p-1.5 rounded-xl border border-emerald-200 bg-emerald-50/40 shadow-2xs" title="Mas bata, mataas ang enerhiya para sa laro">
+                    <span className="text-[9px] text-emerald-700 uppercase font-black block flex items-center justify-center gap-0.5">
+                      <Zap className="w-2.5 h-2.5 fill-emerald-600 text-emerald-600" /> &le;{AGE_TIER_CONFIG.youngMax}y
+                    </span>
+                    <span className="font-black text-emerald-800 text-xs">{ageDistribution.young} active</span>
                   </div>
-                  <div className="col-span-2 bg-white p-1 rounded-xl border border-slate-200 text-[10px] flex justify-around font-bold">
+                  <div className="bg-white p-1.5 rounded-xl border border-purple-200 bg-purple-50/40 shadow-2xs" title="Nakatatanda / suporta / cheering">
+                    <span className="text-[9px] text-purple-700 uppercase font-black block flex items-center justify-center gap-0.5">
+                      <Heart className="w-2.5 h-2.5 fill-purple-600 text-purple-600" /> &ge;{AGE_TIER_CONFIG.olderMin}y
+                    </span>
+                    <span className="font-black text-purple-800 text-xs">{ageDistribution.older} veteran</span>
+                  </div>
+                  <div className="col-span-3 bg-white p-1 rounded-xl border border-slate-200 text-[10px] flex justify-around font-bold">
                     <span className="text-blue-700">👦 {genderCount.male} M</span>
                     <span className="text-rose-600">👩 {genderCount.female} F</span>
+                    <span className="text-slate-600 font-medium">🏃 {ageDistribution.mid} Mid-Age</span>
                   </div>
                 </div>
 
@@ -260,10 +308,24 @@ export const TeamBalancerModal: React.FC<TeamBalancerModalProps> = ({
                           <p className="font-bold text-slate-800 truncate text-[11px]">
                             {member.fullName}
                           </p>
-                          <div className="flex items-center gap-1 text-[10px] text-slate-500">
-                            <span className="font-bold text-slate-700">{member.age}y</span>
-                            <span>•</span>
-                            <span className="truncate max-w-[70px]">{member.department}</span>
+                          <div className="flex items-center gap-1.5 text-[10px] mt-0.5">
+                            {member.age <= AGE_TIER_CONFIG.youngMax ? (
+                              <span className="px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 font-extrabold text-[9px] inline-flex items-center gap-0.5" title="Mas Bata / High Energy">
+                                <Zap className="w-2.5 h-2.5 fill-emerald-600 text-emerald-600" />
+                                {member.age}y
+                              </span>
+                            ) : member.age >= AGE_TIER_CONFIG.olderMin ? (
+                              <span className="px-1.5 py-0.2 rounded-md bg-purple-100 text-purple-800 font-extrabold text-[9px] inline-flex items-center gap-0.5" title="Nakatatanda / Support & Cheering">
+                                <Heart className="w-2.5 h-2.5 fill-purple-600 text-purple-600" />
+                                {member.age}y
+                              </span>
+                            ) : (
+                              <span className="px-1.5 py-0.2 rounded-md bg-slate-200 text-slate-700 font-semibold text-[9px]">
+                                {member.age}y
+                              </span>
+                            )}
+                            <span className="text-slate-300">•</span>
+                            <span className="truncate max-w-[70px] text-slate-500 font-medium">{member.department}</span>
                           </div>
                         </div>
 
