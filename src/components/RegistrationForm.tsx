@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   Info
 } from 'lucide-react';
-import { Registration } from '../types';
+import { Registration, DEPARTMENTS } from '../types';
 import { submitRegistration } from '../firebase/registrations';
 import { RegistrationCountdown, REGISTRATION_DEADLINE_MS } from './RegistrationCountdown';
 
@@ -31,6 +31,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
     medicalNotes: ''
   });
 
+  const [customDepartment, setCustomDepartment] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -58,7 +59,12 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
     }
 
     if (!formData.department.trim()) {
-      setErrorMessage('Paki-type ang inyong Department / Business Unit.');
+      setErrorMessage('Paki-pili ang inyong Departamento / Unit.');
+      return;
+    }
+
+    if ((formData.department === 'Ibang Departamento' || formData.department === 'Iba') && !customDepartment.trim()) {
+      setErrorMessage('Paki-type ang inyong Departamento / Unit sa ibinigay na espasyo.');
       return;
     }
 
@@ -67,6 +73,10 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
       return;
     }
 
+    const resolvedDepartment = (formData.department === 'Ibang Departamento' || formData.department === 'Iba')
+      ? customDepartment.trim()
+      : formData.department.trim();
+
     try {
       setLoading(true);
       const submissionPayload: Omit<Registration, 'id' | 'createdAt'> = {
@@ -74,7 +84,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
         nickname: formData.nickname.trim() || formData.fullName.trim().split(' ')[0],
         age: ageNum,
         gender: formData.gender,
-        department: formData.department.trim(),
+        department: resolvedDepartment,
         medicalNotes: formData.medicalNotes.trim(),
         assignedTeam: null,
         status: 'confirmed'
@@ -223,22 +233,55 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
               </div>
             </div>
 
-            {/* Department (Typed by the user) */}
+            {/* Department Dropdown */}
             <div>
               <label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5 tracking-widest">
-                Departamento / Unit (I-type ang Departamento) <span className="text-[#CE1126]">*</span>
+                Departamento / Unit (Pumili ng Departamento) <span className="text-[#CE1126]">*</span>
               </label>
               <div className="relative">
-                <Building className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
+                <Building className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <select
                   required
-                  placeholder="Hal. IT, Human Resources, Accounting, Logistics, Sales..."
                   value={formData.department}
-                  onChange={e => setFormData({ ...formData, department: e.target.value })}
-                  className="w-full pl-11 pr-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-[#0038A8] focus:bg-white focus:outline-none transition-colors font-medium text-slate-900 text-sm"
-                />
+                  onChange={e => {
+                    const val = e.target.value;
+                    setFormData(prev => ({ ...prev, department: val }));
+                    if (val !== 'Ibang Departamento') {
+                      setCustomDepartment('');
+                    }
+                  }}
+                  className="w-full pl-11 pr-10 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-[#0038A8] focus:bg-white focus:outline-none transition-colors font-medium text-slate-900 text-sm cursor-pointer"
+                >
+                  <option value="" disabled>-- Pumili ng Departamento (Select Department) --</option>
+                  {DEPARTMENTS.map(dept => (
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
+                  ))}
+                  <option value="Ibang Departamento">Ibang Departamento</option>
+                </select>
               </div>
+
+              {/* Input area provided when "Ibang Departamento" is selected */}
+              {(formData.department === 'Ibang Departamento' || formData.department === 'Iba') && (
+                <div className="mt-3.5 p-4 rounded-xl bg-blue-50/70 border border-blue-200 animate-in fade-in duration-200">
+                  <label className="block text-[11px] font-black uppercase text-[#0038A8] mb-1.5 tracking-wider">
+                    I-type ang iyong Departamento / Unit <span className="text-[#CE1126]">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    autoFocus
+                    value={customDepartment}
+                    onChange={e => setCustomDepartment(e.target.value)}
+                    placeholder="Ilagay ang pangalan ng inyong Departamento..."
+                    className="w-full px-4 py-3 bg-white border-2 border-blue-300 rounded-lg focus:border-[#0038A8] focus:outline-none transition-colors font-semibold text-slate-900 text-sm shadow-xs"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1.5 font-medium">
+                    Pakisulat ang inyong departamento o opisina kung wala ito sa listahan sa itaas.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Medical Notes / Physical Restrictions */}

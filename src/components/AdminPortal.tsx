@@ -22,7 +22,7 @@ import {
   Square,
   Palette
 } from 'lucide-react';
-import { Registration, Team, DEFAULT_TEAMS } from '../types';
+import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS } from '../types';
 import { exportToExcel, exportToCSV, getAgeBracket } from '../utils/exportData';
 import { AttendeeDetailsModal } from './AttendeeDetailsModal';
 import { TeamBalancerModal } from './TeamBalancerModal';
@@ -69,15 +69,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [selectedTeam, setSelectedTeam] = useState('all');
   const [sortBy, setSortBy] = useState<'date-desc' | 'date-asc' | 'name' | 'age-asc' | 'age-desc' | 'dept'>('date-desc');
 
-  // Dynamic unique list of departments from registrations
+  // Official departments + any dynamic unique departments from registrations (alphabetically sorted)
   const availableDepartments = useMemo(() => {
-    const depts = new Set<string>();
+    const depts = new Set<string>(DEPARTMENTS);
     registrations.forEach(r => {
       if (r.department && r.department.trim()) {
         depts.add(r.department.trim());
       }
     });
-    return Array.from(depts).sort();
+    return Array.from(depts).sort((a, b) => a.localeCompare(b));
   }, [registrations]);
 
   // Statistics Calculations

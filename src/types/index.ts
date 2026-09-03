@@ -1,10 +1,28 @@
+export const DEPARTMENTS = [
+  'Customer Success and Service Delivery Management',
+  'Enterprise Sales/Non-Banking',
+  'Financial Services Industry/Banking',
+  'Governance, Risk, Compliance and Information Security',
+  'Information and Communications Technology',
+  'Management',
+  'Marketing',
+  'Operations',
+  'Organizational Capability and Design',
+  'Project Management Office',
+  'Technical Solutions Deliver',
+  'Technology Solutions and SI Products',
+  'Value Added Services'
+] as const;
+
+export type Department = typeof DEPARTMENTS[number];
+
 export interface Registration {
   id?: string;
   fullName: string;
   nickname?: string; // Palayaw
   age: number;
   gender: 'Male' | 'Female' | string;
-  department: string; // Typed manually
+  department: string;
   medicalNotes?: string;
   assignedTeam?: string | null;
   status: 'confirmed' | 'pending' | 'checked-in' | 'cancelled';

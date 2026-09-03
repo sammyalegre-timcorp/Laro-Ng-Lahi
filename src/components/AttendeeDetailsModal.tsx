@@ -8,7 +8,7 @@ import {
   HeartPulse,
   Edit3
 } from 'lucide-react';
-import { Registration, Team, DEFAULT_TEAMS } from '../types';
+import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS } from '../types';
 import { updateRegistration, deleteRegistration } from '../firebase/registrations';
 import { getTeamBadgeStyle } from '../utils/teamUtils';
 
@@ -33,17 +33,27 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const [formData, setFormData] = useState<Registration>({ ...attendee });
+  const [customDeptText, setCustomDeptText] = useState(
+    attendee.department && !(DEPARTMENTS as readonly string[]).includes(attendee.department)
+      ? attendee.department
+      : ''
+  );
 
   const handleSave = async () => {
     if (!attendee.id) return;
     try {
       setIsSaving(true);
+      const isCustomDept = formData.department === 'Ibang Departamento' || formData.department === 'Iba' || !(DEPARTMENTS as readonly string[]).includes(formData.department);
+      const finalDepartment = isCustomDept
+        ? (customDeptText.trim() || 'Ibang Departamento')
+        : formData.department.trim();
+
       await updateRegistration(attendee.id, {
         fullName: formData.fullName.trim(),
         nickname: formData.nickname?.trim() || '',
         age: Number(formData.age),
         gender: formData.gender,
-        department: formData.department.trim(),
+        department: finalDepartment,
         assignedTeam: formData.assignedTeam || null,
         status: formData.status,
         medicalNotes: formData.medicalNotes?.trim() || ''
@@ -140,12 +150,44 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">Departamento</label>
-                  <input
-                    type="text"
-                    value={formData.department}
-                    onChange={e => setFormData({ ...formData, department: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-[#0038A8] outline-hidden font-medium"
-                  />
+                  <select
+                    value={
+                      formData.department === 'Ibang Departamento' || formData.department === 'Iba' || !(DEPARTMENTS as readonly string[]).includes(formData.department)
+                        ? 'Ibang Departamento'
+                        : formData.department
+                    }
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val === 'Ibang Departamento') {
+                        setFormData({ ...formData, department: 'Ibang Departamento' });
+                      } else {
+                        setFormData({ ...formData, department: val });
+                        setCustomDeptText('');
+                      }
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-[#0038A8] outline-hidden font-medium cursor-pointer"
+                  >
+                    <option value="" disabled>-- Pumili ng Departamento --</option>
+                    {DEPARTMENTS.map(dept => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                    <option value="Ibang Departamento">Ibang Departamento</option>
+                  </select>
+
+                  {(formData.department === 'Ibang Departamento' || formData.department === 'Iba' || !(DEPARTMENTS as readonly string[]).includes(formData.department)) && (
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        value={customDeptText}
+                        onChange={e => {
+                          setCustomDeptText(e.target.value);
+                          setFormData(prev => ({ ...prev, department: e.target.value }));
+                        }}
+                        placeholder="I-type ang Departamento..."
+                        className="w-full px-3.5 py-2 rounded-xl border-2 border-blue-200 focus:border-[#0038A8] outline-hidden font-medium text-sm bg-blue-50/40"
+                      />
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">Assigned Team</label>
