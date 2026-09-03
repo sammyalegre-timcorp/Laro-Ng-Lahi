@@ -9,7 +9,8 @@ import {
   Calendar,
   Clock,
   MapPin,
-  ExternalLink
+  ExternalLink,
+  Mail
 } from 'lucide-react';
 import { Registration } from '../types';
 
@@ -105,6 +106,14 @@ export const RegistrationSuccess: React.FC<RegistrationSuccessProps> = ({
                 <p className="text-sm text-slate-500 font-medium mt-0.5">
                   Palayaw / Tawag: <strong className="text-[#0038A8]">"{registration.nickname}"</strong>
                 </p>
+              )}
+              {registration.email && (
+                <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-slate-600 mt-1.5">
+                  <Mail className="w-3.5 h-3.5 text-[#0038A8] shrink-0" />
+                  <span className="font-mono font-medium text-[#0038A8] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                    {registration.email}
+                  </span>
+                </div>
               )}
             </div>
 

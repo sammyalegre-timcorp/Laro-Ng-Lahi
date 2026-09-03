@@ -20,7 +20,8 @@ import {
   HeartPulse,
   CheckSquare,
   Square,
-  Palette
+  Palette,
+  Mail
 } from 'lucide-react';
 import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS } from '../types';
 import { exportToExcel, exportToCSV, getAgeBracket } from '../utils/exportData';
@@ -132,6 +133,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       const matchesSearch = !search ||
         r.fullName.toLowerCase().includes(search) ||
         (r.nickname && r.nickname.toLowerCase().includes(search)) ||
+        (r.email && r.email.toLowerCase().includes(search)) ||
         (r.department && r.department.toLowerCase().includes(search)) ||
         (r.medicalNotes && r.medicalNotes.toLowerCase().includes(search)) ||
         (r.assignedTeam && r.assignedTeam.toLowerCase().includes(search));
@@ -442,7 +444,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Maghanap (pangalan, dept, team...)"
+                  placeholder="Maghanap (pangalan, email, dept, team...)"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   className="w-full pl-11 pr-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-[#0038A8] focus:bg-white focus:outline-none text-xs sm:text-sm font-medium transition-colors"
@@ -637,7 +639,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           </button>
                         </td>
 
-                        {/* Name & Nickname */}
+                        {/* Name & Nickname & Email */}
                         <td className="p-4">
                           <div className="font-black text-slate-900 text-sm">
                             {attendee.fullName}
@@ -645,6 +647,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           {attendee.nickname && (
                             <div className="text-xs text-[#0038A8] font-bold mt-0.5">
                               "{attendee.nickname}"
+                            </div>
+                          )}
+                          {attendee.email && (
+                            <div className="text-[11px] text-slate-600 font-mono flex items-center gap-1 mt-0.5">
+                              <Mail className="w-3 h-3 text-[#0038A8] shrink-0" />
+                              <span className="truncate max-w-[200px]">{attendee.email}</span>
                             </div>
                           )}
                           <span className="text-[10px] font-mono text-slate-400 block mt-0.5">

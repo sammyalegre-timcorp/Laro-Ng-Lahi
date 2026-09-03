@@ -150,7 +150,10 @@ export const PrintableRosterModal: React.FC<PrintableRosterModalProps> = ({
                       {members.map((m, idx) => (
                         <tr key={m.id || idx} className="border-b border-slate-300 hover:bg-slate-50">
                           <td className="p-2 border-r border-slate-300 text-center font-mono">{idx + 1}</td>
-                          <td className="p-2 border-r border-slate-300 font-bold text-slate-900">{m.fullName}</td>
+                          <td className="p-2 border-r border-slate-300">
+                            <div className="font-bold text-slate-900">{m.fullName}</div>
+                            {m.email && <div className="text-[10px] text-slate-500 font-mono">{m.email}</div>}
+                          </td>
                           <td className="p-2 border-r border-slate-300 text-slate-700 font-semibold">{m.nickname || '-'}</td>
                           <td className="p-2 border-r border-slate-300 text-center font-bold">{m.age}</td>
                           <td className="p-2 border-r border-slate-300 text-center">{m.gender.slice(0, 1)}</td>

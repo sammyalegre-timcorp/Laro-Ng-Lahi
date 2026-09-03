@@ -18,6 +18,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
     'Registration ID': r.id || '',
     'Full Name': r.fullName,
     'Palayaw / Nickname': r.nickname || '-',
+    'Employee Email': r.email || '-',
     'Age': r.age,
     'Age Group': getAgeBracket(r.age),
     'Gender': r.gender,
@@ -36,6 +37,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
     { wch: 22 }, // Reg ID
     { wch: 26 }, // Full Name
     { wch: 18 }, // Nickname
+    { wch: 32 }, // Email
     { wch: 8 },  // Age
     { wch: 14 }, // Age Group
     { wch: 16 }, // Gender
@@ -65,6 +67,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
       'Team Name': `=== ${teamName.toUpperCase()} (${members.length} Members, Avg Age: ${avgAge}) ===`,
       'Player Name': '',
       'Palayaw': '',
+      'Email': '',
       'Age': '',
       'Gender': '',
       'Department': '',
@@ -76,6 +79,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
         'Team Name': `${teamName}`,
         'Player Name': `${idx + 1}. ${m.fullName}`,
         'Palayaw': m.nickname || '-',
+        'Email': m.email || '-',
         'Age': m.age,
         'Gender': m.gender,
         'Department': m.department || '-',
@@ -92,6 +96,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
     { wch: 26 },
     { wch: 28 },
     { wch: 16 },
+    { wch: 32 },
     { wch: 8 },
     { wch: 14 },
     { wch: 24 },
@@ -109,6 +114,7 @@ export function exportToCSV(registrations: Registration[], filename = 'Laro_ng_L
     'Registration ID',
     'Full Name',
     'Palayaw / Nickname',
+    'Employee Email',
     'Age',
     'Age Group',
     'Gender',
@@ -130,6 +136,7 @@ export function exportToCSV(registrations: Registration[], filename = 'Laro_ng_L
     escapeCSV(r.id || ''),
     escapeCSV(r.fullName),
     escapeCSV(r.nickname || ''),
+    escapeCSV(r.email || ''),
     r.age,
     escapeCSV(getAgeBracket(r.age)),
     escapeCSV(r.gender),

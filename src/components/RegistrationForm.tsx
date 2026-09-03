@@ -12,7 +12,8 @@ import {
   Sparkles,
   ShieldCheck,
   CheckCircle2,
-  Info
+  Info,
+  Mail
 } from 'lucide-react';
 import { Registration, DEPARTMENTS } from '../types';
 import { submitRegistration } from '../firebase/registrations';
@@ -28,6 +29,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
   const [formData, setFormData] = useState({
     fullName: '',
     nickname: '',
+    email: '',
     age: '',
     gender: 'Male' as 'Male' | 'Female',
     department: '',
@@ -52,6 +54,29 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
     // Validations
     if (!formData.fullName.trim()) {
       setErrorMessage('Paki-lagay ang inyong buong pangalan (Full Name).');
+      return;
+    }
+
+    // Email validation - must be timcorp.net.ph domain
+    const emailRaw = formData.email.trim().toLowerCase();
+    if (!emailRaw) {
+      setErrorMessage('Paki-lagay ang inyong opisyal na TIM Corp email address (@timcorp.net.ph).');
+      return;
+    }
+
+    let resolvedEmail = emailRaw;
+    if (!resolvedEmail.includes('@')) {
+      resolvedEmail = `${resolvedEmail}@timcorp.net.ph`;
+    }
+
+    if (!resolvedEmail.endsWith('@timcorp.net.ph')) {
+      setErrorMessage('Kailangan ay may domain na @timcorp.net.ph ang email address (Hal. juan.delacruz@timcorp.net.ph).');
+      return;
+    }
+
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@timcorp\.net\.ph$/i;
+    if (!emailPattern.test(resolvedEmail)) {
+      setErrorMessage('Paki-suri ang email address kung wasto ang format (Hal. juan.delacruz@timcorp.net.ph).');
       return;
     }
 
@@ -85,6 +110,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
       const submissionPayload: Omit<Registration, 'id' | 'createdAt'> = {
         fullName: formData.fullName.trim(),
         nickname: formData.nickname.trim() || formData.fullName.trim().split(' ')[0],
+        email: resolvedEmail,
         age: ageNum,
         gender: formData.gender,
         department: resolvedDepartment,
@@ -266,6 +292,39 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
                 onChange={e => setFormData({ ...formData, nickname: e.target.value })}
                 className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-[#0038A8] focus:bg-white focus:outline-none transition-colors font-medium text-slate-900 text-sm"
               />
+            </div>
+
+            {/* Employee Email Address (@timcorp.net.ph) */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+                <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-[#0038A8]" />
+                  <span>Opisyal na Email ng Kawani (Employee Email) <span className="text-[#CE1126]">*</span></span>
+                </label>
+                <span className="text-[10px] font-bold text-[#0038A8] bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
+                  @timcorp.net.ph domain
+                </span>
+              </div>
+              <div className="relative flex items-center">
+                <Mail className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  required
+                  placeholder="Hal. juan.delacruz@timcorp.net.ph"
+                  value={formData.email}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full pl-11 pr-5 sm:pr-36 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-[#0038A8] focus:bg-white focus:outline-none transition-colors font-medium text-slate-900 text-sm"
+                />
+                <div className="hidden sm:flex absolute right-2.5 top-1/2 -translate-y-1/2 items-center">
+                  <span className="text-xs font-bold text-slate-500 bg-slate-200/90 px-2.5 py-1.5 rounded-lg select-none">
+                    @timcorp.net.ph
+                  </span>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1.5 font-medium flex items-center gap-1.5">
+                <Info className="w-3.5 h-3.5 text-[#0038A8] shrink-0" />
+                <span>Kailangan ay opisyal na TIM Corp email address ang gamitin para sa rehistrasyon.</span>
+              </p>
             </div>
 
             {/* Age & Gender (Crucial for balancing) */}

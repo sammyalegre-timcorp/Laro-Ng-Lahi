@@ -6,7 +6,8 @@ import {
   Save,
   Shield,
   HeartPulse,
-  Edit3
+  Edit3,
+  Mail
 } from 'lucide-react';
 import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS } from '../types';
 import { updateRegistration, deleteRegistration } from '../firebase/registrations';
@@ -48,9 +49,22 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
         ? (customDeptText.trim() || 'Ibang Departamento')
         : formData.department.trim();
 
+      let finalEmail = formData.email?.trim().toLowerCase() || '';
+      if (finalEmail) {
+        if (!finalEmail.includes('@')) {
+          finalEmail = `${finalEmail}@timcorp.net.ph`;
+        }
+        if (!finalEmail.endsWith('@timcorp.net.ph')) {
+          alert('Kailangan ay may domain na @timcorp.net.ph ang email address.');
+          setIsSaving(false);
+          return;
+        }
+      }
+
       await updateRegistration(attendee.id, {
         fullName: formData.fullName.trim(),
         nickname: formData.nickname?.trim() || '',
+        email: finalEmail,
         age: Number(formData.age),
         gender: formData.gender,
         department: finalDepartment,
@@ -127,6 +141,21 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
                     onChange={e => setFormData({ ...formData, nickname: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-[#0038A8] outline-hidden font-medium"
                   />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">
+                    Employee Email (@timcorp.net.ph)
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={formData.email || ''}
+                      onChange={e => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="pangalan@timcorp.net.ph"
+                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-[#0038A8] outline-hidden font-medium text-sm"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">Edad (Age)</label>
@@ -251,6 +280,12 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
                     <p className="text-sm text-slate-600 mt-0.5">
                       Palayaw: <strong className="text-[#0038A8]">"{attendee.nickname}"</strong>
                     </p>
+                  )}
+                  {attendee.email && (
+                    <div className="flex items-center gap-1.5 text-xs text-slate-600 mt-1">
+                      <Mail className="w-3.5 h-3.5 text-[#0038A8] shrink-0" />
+                      <span className="font-mono text-[#0038A8] font-bold">{attendee.email}</span>
+                    </div>
                   )}
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-xs px-3 py-1 rounded-full bg-[#0038A8]/10 text-[#0038A8] font-bold">
