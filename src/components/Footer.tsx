@@ -21,6 +21,9 @@ export const Footer: React.FC<FooterProps> = ({ currentPath, onNavigate }) => {
               LARO NG LAHI 2026 • PALARONG PINOY CORPORATE SPORTSFEST
             </p>
             <p className="text-[11px] text-slate-400 font-medium">
+              Oct. 13, 2026 (8:00 am - 9:00 pm) • Met Sports Park, Pasay City
+            </p>
+            <p className="text-[10px] text-slate-400 font-normal">
               Buhayin ang Diwang Bayanihan, Palakasin ang Samahan ng Bawat Kawani
             </p>
           </div>

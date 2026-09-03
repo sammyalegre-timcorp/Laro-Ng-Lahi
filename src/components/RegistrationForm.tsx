@@ -4,6 +4,8 @@ import {
   User,
   Building,
   Calendar,
+  Clock,
+  MapPin,
   HeartPulse,
   Send,
   Award,
@@ -15,6 +17,7 @@ import {
 import { Registration, DEPARTMENTS } from '../types';
 import { submitRegistration } from '../firebase/registrations';
 import { RegistrationCountdown, REGISTRATION_DEADLINE_MS } from './RegistrationCountdown';
+import { EventLocationMap } from './EventLocationMap';
 
 interface RegistrationFormProps {
   onSuccess: (registrationData: Registration, docId: string) => void;
@@ -118,7 +121,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
       </div>
 
       {/* Header Banner */}
-      <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10 bg-white/70 backdrop-blur-xs p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm">
+      <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10 bg-white/80 backdrop-blur-xs p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6">
           <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-2xl p-1.5 shadow-md border border-slate-100 flex items-center justify-center shrink-0">
             <img
@@ -140,6 +143,75 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
             <p className="text-slate-500 font-semibold uppercase tracking-[0.15em] text-xs sm:text-sm">
               2026 Employee Inter-Departmental Sports & Cultural Festival
             </p>
+          </div>
+        </div>
+
+        {/* Prominent Event Schedule & Venue Keycard */}
+        <div className="shrink-0 bg-gradient-to-br from-blue-50/90 via-slate-50 to-amber-50/70 p-4 sm:p-5 rounded-2xl border-2 border-blue-200/80 shadow-sm sm:min-w-[280px]">
+          <div className="text-[10px] font-black uppercase tracking-widest text-[#0038A8] mb-2.5 flex items-center justify-between gap-2 border-b border-blue-100 pb-2">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>Iskedyul at Lugar ng Palaro</span>
+            </div>
+            <span className="px-2 py-0.5 rounded-md bg-[#0038A8] text-white text-[9px] font-black">
+              2026
+            </span>
+          </div>
+
+          <div className="space-y-2.5">
+            {/* Date */}
+            <div className="flex items-start gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-[#0038A8] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                <Calendar className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-400 font-black uppercase block leading-tight">
+                  Petsa (Date)
+                </span>
+                <span className="text-sm font-black text-slate-900 leading-tight block">
+                  Oct. 13, 2026
+                </span>
+                <span className="text-[10px] text-slate-500 font-medium leading-none block">
+                  Martes (Tuesday)
+                </span>
+              </div>
+            </div>
+
+            {/* Time */}
+            <div className="flex items-start gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-[#CE1126] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                <Clock className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-400 font-black uppercase block leading-tight">
+                  Oras (Time)
+                </span>
+                <span className="text-sm font-black text-slate-900 leading-tight block">
+                  8:00 am - 9:00 pm
+                </span>
+                <span className="text-[10px] text-slate-500 font-medium leading-none block">
+                  Assembly: 7:30 AM
+                </span>
+              </div>
+            </div>
+
+            {/* Venue */}
+            <div className="flex items-start gap-2.5 pt-1.5 border-t border-slate-200/80">
+              <div className="w-7 h-7 rounded-lg bg-[#00A86B] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                <MapPin className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-400 font-black uppercase block leading-tight">
+                  Lugar (Venue)
+                </span>
+                <span className="text-xs font-black text-[#0038A8] leading-tight block">
+                  Met Sports Park
+                </span>
+                <span className="text-[10px] text-slate-500 font-medium leading-none block">
+                  Pasay City, Metro Manila
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -432,6 +504,11 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
 
         </div>
 
+      </div>
+
+      {/* Official Event Venue & Interactive Google Map Section */}
+      <div className="mt-12 relative z-10">
+        <EventLocationMap />
       </div>
     </div>
   );

@@ -52,6 +52,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attende
 
           {/* Right Side Header Controls */}
           <div className="flex items-center gap-3">
+            {/* Event Schedule Chip for Registrants */}
+            {!isAdmin && (
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-[#0038A8] animate-pulse" />
+                <span>Oct. 13, 2026 (8am - 9pm)</span>
+                <span className="text-slate-300">•</span>
+                <span className="text-[#0038A8]">Met Sports Park</span>
+              </div>
+            )}
+
             {/* Live attendee count indicator - only on admin view */}
             {isAdmin && attendeeCount > 0 && (
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 text-xs font-bold">

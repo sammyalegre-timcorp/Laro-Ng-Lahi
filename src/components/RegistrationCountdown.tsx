@@ -112,6 +112,12 @@ export const RegistrationCountdown: React.FC = () => {
             <p className="text-xs sm:text-sm text-blue-100/90 font-medium">
               Huling araw ng rehistrasyon: <strong className="text-[#FFCD00]">Biyernes, Setyembre 18, 2026 • 7:00 PM</strong>
             </p>
+            <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-white/10 border border-white/15 text-xs text-amber-200 font-bold">
+              <span>📅 Araw ng Palaro:</span>
+              <span className="text-white font-black">Oct. 13, 2026 (8:00 am - 9:00 pm)</span>
+              <span>•</span>
+              <span className="text-[#FFCD00]">Met Sports Park</span>
+            </div>
           </div>
         </div>
 

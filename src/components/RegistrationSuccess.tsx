@@ -5,7 +5,11 @@ import {
   Printer,
   UserPlus,
   ShieldCheck,
-  HeartPulse
+  HeartPulse,
+  Calendar,
+  Clock,
+  MapPin,
+  ExternalLink
 } from 'lucide-react';
 import { Registration } from '../types';
 
@@ -141,6 +145,44 @@ export const RegistrationSuccess: React.FC<RegistrationSuccessProps> = ({
             <div className="flex justify-between items-center text-xs">
               <span className="text-slate-500 font-medium">Departamento:</span>
               <span className="font-bold text-slate-800">{registration.department}</span>
+            </div>
+          </div>
+
+          {/* Event Schedule & Venue Highlight */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50/60 border border-blue-200/80 text-xs space-y-2.5">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#0038A8] block">
+              Iskedyul at Lugar ng Palaro
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-700">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-[#0038A8] shrink-0" />
+                <div>
+                  <span className="font-black text-slate-900 block">Oct. 13, 2026</span>
+                  <span className="text-[10px] text-slate-500">Martes (Tuesday)</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-[#CE1126] shrink-0" />
+                <div>
+                  <span className="font-black text-slate-900 block">8:00 am - 9:00 pm</span>
+                  <span className="text-[10px] text-slate-500">Assembly: 7:30 AM</span>
+                </div>
+              </div>
+            </div>
+            <div className="pt-2 border-t border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-[#00A86B] shrink-0" />
+                <span className="font-black text-[#0038A8]">Met Sports Park, Pasay City</span>
+              </div>
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=Met+Sports+Park+Pasay"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0038A8] hover:underline"
+              >
+                <span>Tingnan sa Google Maps</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
             </div>
           </div>
 
