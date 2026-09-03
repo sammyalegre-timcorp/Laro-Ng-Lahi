@@ -154,6 +154,7 @@ export default function App() {
               <RegistrationForm
                 onSuccess={handleRegistrationSuccess}
                 attendeeCount={registrations.length}
+                registrations={registrations}
               />
             )
           )}

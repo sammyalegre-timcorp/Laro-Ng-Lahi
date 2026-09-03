@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   AlertCircle,
   User,
@@ -13,19 +13,21 @@ import {
   ShieldCheck,
   CheckCircle2,
   Info,
-  Mail
+  Mail,
+  AlertTriangle
 } from 'lucide-react';
 import { Registration, DEPARTMENTS } from '../types';
-import { submitRegistration } from '../firebase/registrations';
+import { submitRegistration, findDuplicateRegistration } from '../firebase/registrations';
 import { RegistrationCountdown, REGISTRATION_DEADLINE_MS } from './RegistrationCountdown';
 import { EventLocationMap } from './EventLocationMap';
 
 interface RegistrationFormProps {
   onSuccess: (registrationData: Registration, docId: string) => void;
   attendeeCount?: number;
+  registrations?: Registration[];
 }
 
-export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
+export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess, registrations = [] }) => {
   const [formData, setFormData] = useState({
     fullName: '',
     nickname: '',
@@ -41,6 +43,22 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const isRegistrationClosed = Date.now() >= REGISTRATION_DEADLINE_MS;
+
+  // Real-time duplicate attendee detection for proactive user guidance
+  const duplicateNameAttendee = useMemo(() => {
+    const trimmed = formData.fullName.trim();
+    if (!trimmed || trimmed.length < 3) return null;
+    const check = findDuplicateRegistration(registrations, { fullName: trimmed, email: '' });
+    return check.isDuplicate ? check.existing : null;
+  }, [formData.fullName, registrations]);
+
+  const duplicateEmailAttendee = useMemo(() => {
+    const raw = formData.email.trim().toLowerCase();
+    if (!raw || raw.length < 3) return null;
+    const resolved = raw.includes('@') ? raw : `${raw}@timcorp.net.ph`;
+    const check = findDuplicateRegistration(registrations, { fullName: '', email: resolved });
+    return check.isDuplicate ? check.existing : null;
+  }, [formData.email, registrations]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +95,22 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
     const emailPattern = /^[a-zA-Z0-9._%+-]+@timcorp\.net\.ph$/i;
     if (!emailPattern.test(resolvedEmail)) {
       setErrorMessage('Paki-suri ang email address kung wasto ang format (Hal. juan.delacruz@timcorp.net.ph).');
+      return;
+    }
+
+    // Prevent duplicate attendees: check both full name and email against existing registrations
+    const duplicateCheck = findDuplicateRegistration(registrations, {
+      fullName: formData.fullName.trim(),
+      email: resolvedEmail
+    });
+
+    if (duplicateCheck.isDuplicate && duplicateCheck.existing) {
+      const fieldDescription = duplicateCheck.matchedField === 'email'
+        ? `ang email na "${resolvedEmail}"`
+        : `ang pangalang "${formData.fullName.trim()}"`;
+      setErrorMessage(
+        `Bawal ang duplicate registration: Naka-rehistro na po ${fieldDescription} para kay ${duplicateCheck.existing.fullName} (${duplicateCheck.existing.department || 'TIM Corp'}). Bawat kalahok ay pinapayagan lamang ng isang (1) rehistrasyon.`
+      );
       return;
     }
 
@@ -275,9 +309,21 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
                   placeholder="Hal. Juan Dela Cruz"
                   value={formData.fullName}
                   onChange={e => setFormData({ ...formData, fullName: e.target.value })}
-                  className="w-full pl-11 pr-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-[#0038A8] focus:bg-white focus:outline-none transition-colors font-medium text-slate-900 text-sm"
+                  className={`w-full pl-11 pr-5 py-4 bg-slate-50 border-2 rounded-xl focus:bg-white focus:outline-none transition-colors font-medium text-slate-900 text-sm ${
+                    duplicateNameAttendee ? 'border-amber-400 focus:border-amber-500 bg-amber-50/40' : 'border-slate-100 focus:border-[#0038A8]'
+                  }`}
                 />
               </div>
+              {duplicateNameAttendee && (
+                <div className="mt-2 p-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-medium flex items-start gap-2 animate-in fade-in duration-200">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Naka-rehistro na ang pangalang ito:</span> Nakalista na si{' '}
+                    <strong className="text-amber-950 font-black">{duplicateNameAttendee.fullName}</strong> ({duplicateNameAttendee.department || 'TIM Corp'}).
+                    <span className="block mt-0.5 text-[11px] text-amber-800">Hindi na kailangang magrehistro ulit. Isa (1) lamang ang opisyal na puwang bawat kalahok.</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Nickname / Palayaw */}
@@ -313,7 +359,9 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
                   placeholder="Hal. juan.delacruz@timcorp.net.ph"
                   value={formData.email}
                   onChange={e => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-11 pr-5 sm:pr-36 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-[#0038A8] focus:bg-white focus:outline-none transition-colors font-medium text-slate-900 text-sm"
+                  className={`w-full pl-11 pr-5 sm:pr-36 py-4 bg-slate-50 border-2 rounded-xl focus:bg-white focus:outline-none transition-colors font-medium text-slate-900 text-sm ${
+                    duplicateEmailAttendee ? 'border-amber-400 focus:border-amber-500 bg-amber-50/40' : 'border-slate-100 focus:border-[#0038A8]'
+                  }`}
                 />
                 <div className="hidden sm:flex absolute right-2.5 top-1/2 -translate-y-1/2 items-center">
                   <span className="text-xs font-bold text-slate-500 bg-slate-200/90 px-2.5 py-1.5 rounded-lg select-none">
@@ -321,10 +369,21 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
                   </span>
                 </div>
               </div>
-              <p className="text-[11px] text-slate-500 mt-1.5 font-medium flex items-center gap-1.5">
-                <Info className="w-3.5 h-3.5 text-[#0038A8] shrink-0" />
-                <span>Kailangan ay opisyal na TIM Corp email address ang gamitin para sa rehistrasyon.</span>
-              </p>
+              {duplicateEmailAttendee ? (
+                <div className="mt-2 p-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-medium flex items-start gap-2 animate-in fade-in duration-200">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Naka-rehistro na ang email na ito:</span> Nakalaan na ito kay{' '}
+                    <strong className="text-amber-950 font-black">{duplicateEmailAttendee.fullName}</strong> ({duplicateEmailAttendee.department || 'TIM Corp'}).
+                    <span className="block mt-0.5 text-[11px] text-amber-800">Bawal ang duplicate registration para sa iisang empleyado.</span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-[11px] text-slate-500 mt-1.5 font-medium flex items-center gap-1.5">
+                  <Info className="w-3.5 h-3.5 text-[#0038A8] shrink-0" />
+                  <span>Kailangan ay opisyal na TIM Corp email address ang gamitin para sa rehistrasyon.</span>
+                </p>
+              )}
             </div>
 
             {/* Age & Gender (Crucial for balancing) */}

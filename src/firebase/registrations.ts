@@ -7,14 +7,95 @@ import {
   onSnapshot,
   query,
   orderBy,
-  writeBatch
+  writeBatch,
+  getDocs
 } from 'firebase/firestore';
 import { db } from './config';
 import { Registration } from '../types';
 
 const REGISTRATIONS_COLLECTION = 'registrations';
 
+/**
+ * Normalizes an attendee's full name by removing periods, commas, extra whitespace and converting to lowercase.
+ */
+export function normalizeAttendeeName(name: string): string {
+  return (name || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[.,\-_#@]/g, ' ')
+    .replace(/\s+/g, ' ');
+}
+
+/**
+ * Normalizes an email address for case-insensitive comparison.
+ */
+export function normalizeEmail(email?: string): string {
+  return (email || '').toLowerCase().trim();
+}
+
+/**
+ * Helper to check if a given name or email matches any existing registration.
+ */
+export function findDuplicateRegistration(
+  registrations: Registration[],
+  candidate: { fullName: string; email?: string },
+  excludeId?: string
+): { isDuplicate: boolean; matchedField: 'email' | 'fullName' | null; existing?: Registration } {
+  const candName = normalizeAttendeeName(candidate.fullName);
+  const candEmail = normalizeEmail(candidate.email);
+
+  for (const reg of registrations) {
+    if (excludeId && reg.id === excludeId) continue;
+
+    // Check email match if both have emails
+    if (candEmail && reg.email && normalizeEmail(reg.email) === candEmail) {
+      return { isDuplicate: true, matchedField: 'email', existing: reg };
+    }
+
+    // Check full name match
+    if (candName && normalizeAttendeeName(reg.fullName) === candName) {
+      return { isDuplicate: true, matchedField: 'fullName', existing: reg };
+    }
+  }
+
+  return { isDuplicate: false, matchedField: null };
+}
+
 export async function submitRegistration(data: Omit<Registration, 'id' | 'createdAt'>): Promise<string> {
+  // Query all current registrations to strictly enforce uniqueness directly in Firestore
+  const snap = await getDocs(collection(db, REGISTRATIONS_COLLECTION));
+  const existingList: Registration[] = snap.docs.map((docSnap) => {
+    const d = docSnap.data();
+    return {
+      id: docSnap.id,
+      fullName: d.fullName || '',
+      nickname: d.nickname || '',
+      email: d.email || '',
+      age: Number(d.age) || 0,
+      gender: d.gender || 'Male',
+      department: d.department || '',
+      customDepartment: d.customDepartment || '',
+      medicalNotes: d.medicalNotes || '',
+      assignedTeam: d.assignedTeam || null,
+      status: d.status || 'confirmed',
+      createdAt: d.createdAt || ''
+    };
+  });
+
+  const dupCheck = findDuplicateRegistration(existingList, {
+    fullName: data.fullName,
+    email: data.email
+  });
+
+  if (dupCheck.isDuplicate && dupCheck.existing) {
+    const reason = dupCheck.matchedField === 'email'
+      ? `ang email na "${data.email}"`
+      : `ang pangalang "${data.fullName}"`;
+    throw new Error(
+      `Bawal ang duplicate registration: Naka-rehistro na po ${reason} para kay ${dupCheck.existing.fullName} (${dupCheck.existing.department || 'TIM Corp'}). Bawat kalahok ay mayroon lamang isang (1) opisyal na rehistrasyon.`
+    );
+  }
+
   const docRef = await addDoc(collection(db, REGISTRATIONS_COLLECTION), {
     ...data,
     createdAt: new Date().toISOString(),

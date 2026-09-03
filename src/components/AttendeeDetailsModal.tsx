@@ -7,15 +7,17 @@ import {
   Shield,
   HeartPulse,
   Edit3,
-  Mail
+  Mail,
+  AlertTriangle
 } from 'lucide-react';
 import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS } from '../types';
-import { updateRegistration, deleteRegistration } from '../firebase/registrations';
+import { updateRegistration, deleteRegistration, findDuplicateRegistration } from '../firebase/registrations';
 import { getTeamBadgeStyle } from '../utils/teamUtils';
 
 interface AttendeeDetailsModalProps {
   attendee: Registration;
   teams?: Team[];
+  allRegistrations?: Registration[];
   onClose: () => void;
   onUpdated?: () => void;
   onDeleted?: () => void;
@@ -24,6 +26,7 @@ interface AttendeeDetailsModalProps {
 export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
   attendee,
   teams = DEFAULT_TEAMS,
+  allRegistrations = [],
   onClose,
   onUpdated,
   onDeleted
@@ -56,6 +59,25 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
         }
         if (!finalEmail.endsWith('@timcorp.net.ph')) {
           alert('Kailangan ay may domain na @timcorp.net.ph ang email address.');
+          setIsSaving(false);
+          return;
+        }
+      }
+
+      // Check if update would create duplicate with another attendee
+      if (allRegistrations && allRegistrations.length > 0) {
+        const dupCheck = findDuplicateRegistration(allRegistrations, {
+          fullName: formData.fullName.trim(),
+          email: finalEmail
+        }, attendee.id);
+
+        if (dupCheck.isDuplicate && dupCheck.existing) {
+          const reason = dupCheck.matchedField === 'email'
+            ? `ang email na "${finalEmail}"`
+            : `ang pangalang "${formData.fullName.trim()}"`;
+          alert(
+            `Hindi mai-save: May umiiral nang ibang kalahok na gumagamit ng ${reason} (${dupCheck.existing.fullName} - ${dupCheck.existing.department || 'TIM Corp'}). Bawal ang duplicate registration.`
+          );
           setIsSaving(false);
           return;
         }

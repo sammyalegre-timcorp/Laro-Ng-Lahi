@@ -30,7 +30,14 @@ import { TeamBalancerModal } from './TeamBalancerModal';
 import { PrintableRosterModal } from './PrintableRosterModal';
 import { TeamManagementModal } from './TeamManagementModal';
 import { GameRulesGuide } from './GameRulesGuide';
-import { updateRegistration, deleteRegistration, batchDeleteRegistrations } from '../firebase/registrations';
+import { DuplicateResolverModal } from './DuplicateResolverModal';
+import {
+  updateRegistration,
+  deleteRegistration,
+  batchDeleteRegistrations,
+  normalizeAttendeeName,
+  normalizeEmail
+} from '../firebase/registrations';
 import { getTeamBadgeStyle } from '../utils/teamUtils';
 
 interface AdminPortalProps {
@@ -69,6 +76,54 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [selectedGender, setSelectedGender] = useState('all');
   const [selectedTeam, setSelectedTeam] = useState('all');
   const [sortBy, setSortBy] = useState<'date-desc' | 'date-asc' | 'name' | 'age-asc' | 'age-desc' | 'dept'>('date-desc');
+  const [isDuplicateResolverOpen, setIsDuplicateResolverOpen] = useState(false);
+  const [filterDuplicatesOnly, setFilterDuplicatesOnly] = useState(false);
+
+  // Group registrations by attendee (normalized full name OR normalized email)
+  const duplicateGroups = useMemo(() => {
+    const map = new Map<string, Registration[]>();
+
+    for (const r of registrations) {
+      const emailNorm = r.email ? normalizeEmail(r.email) : '';
+      const nameNorm = normalizeAttendeeName(r.fullName);
+
+      let foundKey: string | null = null;
+      for (const [key, list] of map.entries()) {
+        const isMatch = list.some(item => {
+          if (emailNorm && item.email && normalizeEmail(item.email) === emailNorm) {
+            return true;
+          }
+          if (nameNorm && normalizeAttendeeName(item.fullName) === nameNorm) {
+            return true;
+          }
+          return false;
+        });
+        if (isMatch) {
+          foundKey = key;
+          break;
+        }
+      }
+
+      if (foundKey) {
+        map.get(foundKey)!.push(r);
+      } else {
+        const newKey = emailNorm ? `email:${emailNorm}` : `name:${nameNorm}`;
+        map.set(newKey, [r]);
+      }
+    }
+
+    return Array.from(map.values()).filter(g => g.length > 1);
+  }, [registrations]);
+
+  const duplicateAttendeeIds = useMemo(() => {
+    const set = new Set<string>();
+    duplicateGroups.forEach(group => {
+      group.forEach(r => {
+        if (r.id) set.add(r.id);
+      });
+    });
+    return set;
+  }, [duplicateGroups]);
 
   // Official departments + any dynamic unique departments from registrations (alphabetically sorted)
   const availableDepartments = useMemo(() => {
@@ -150,6 +205,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       // Team Filter
       const matchesTeam = selectedTeam === 'all' ||
         (selectedTeam === 'unassigned' ? !r.assignedTeam : r.assignedTeam === selectedTeam);
+
+      // Duplicates only filter
+      if (filterDuplicatesOnly && (!r.id || !duplicateAttendeeIds.has(r.id))) {
+        return false;
+      }
 
       return matchesSearch && matchesDept && matchesAge && matchesGender && matchesTeam;
     }).sort((a, b) => {
@@ -406,8 +466,55 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
       </div>
 
+      {/* Duplicate Registrations Alert Banner */}
+      {duplicateGroups.length > 0 && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-3xl p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm animate-in fade-in duration-300">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-900 flex items-center justify-center shrink-0 border border-amber-300">
+              <AlertTriangle className="w-6 h-6 text-amber-700" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-black text-amber-950 text-base sm:text-lg">
+                  May Natuklasang Duplicate Registrations!
+                </h3>
+                <span className="px-2.5 py-0.5 rounded-full bg-[#CE1126] text-white text-xs font-black tracking-wider">
+                  {duplicateGroups.length} kalahok na may higit sa 1 talaan
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-amber-800 font-medium mt-1">
+                Kabilang dito si: <strong>{duplicateGroups.slice(0, 3).map(g => g[0]?.fullName).join(', ')}</strong>
+                {duplicateGroups.length > 3 ? ` at ${duplicateGroups.length - 3} pa` : ''}.
+                Maaari mong suriin at linisin ang mga duplicate sa isang click lamang.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0">
+            <button
+              onClick={() => setFilterDuplicatesOnly(!filterDuplicatesOnly)}
+              className={`flex-1 md:flex-initial px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                filterDuplicatesOnly
+                  ? 'bg-amber-600 text-white shadow-md'
+                  : 'bg-white border-2 border-amber-300 text-amber-900 hover:bg-amber-100'
+              }`}
+            >
+              {filterDuplicatesOnly ? 'Ipakita Lahat' : 'I-filter ang Duplicates'}
+            </button>
+
+            <button
+              onClick={() => setIsDuplicateResolverOpen(true)}
+              className="flex-1 md:flex-initial px-4 py-2.5 rounded-xl bg-[#CE1126] hover:bg-[#a80e1e] text-white text-xs font-black uppercase tracking-wider shadow-md hover:scale-105 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-[#FFCD00]" />
+              <span>Ayusin ang Duplicates</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={() => setActiveTab('directory')}
           className={`px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer ${
@@ -431,6 +538,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           <BookOpen className="w-4 h-4" />
           <span>Games & Game Masters</span>
         </button>
+
+        {duplicateGroups.length > 0 && (
+          <button
+            onClick={() => setIsDuplicateResolverOpen(true)}
+            className="px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-wider bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 flex items-center gap-1.5 cursor-pointer ml-auto"
+          >
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+            <span>Ayusin ang Duplicates ({duplicateGroups.length})</span>
+          </button>
+        )}
       </div>
 
       {/* Main Tab Content */}
@@ -641,8 +758,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
                         {/* Name & Nickname & Email */}
                         <td className="p-4">
-                          <div className="font-black text-slate-900 text-sm">
-                            {attendee.fullName}
+                          <div className="flex items-center gap-2">
+                            <span className="font-black text-slate-900 text-sm">
+                              {attendee.fullName}
+                            </span>
+                            {attendee.id && duplicateAttendeeIds.has(attendee.id) && (
+                              <button
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  setIsDuplicateResolverOpen(true);
+                                }}
+                                title="I-click para ayusin ang duplicate"
+                                className="px-2 py-0.5 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-800 text-[10px] font-black tracking-wide inline-flex items-center gap-1 border border-amber-300 cursor-pointer"
+                              >
+                                <AlertTriangle className="w-3 h-3 text-amber-600" />
+                                <span>Duplicate</span>
+                              </button>
+                            )}
                           </div>
                           {attendee.nickname && (
                             <div className="text-xs text-[#0038A8] font-bold mt-0.5">
@@ -887,12 +1019,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         <AttendeeDetailsModal
           attendee={selectedAttendee}
           teams={teams}
+          allRegistrations={registrations}
           onClose={() => setSelectedAttendee(null)}
           onUpdated={() => {
             showToast('Na-update ang impormasyon ng kalahok.');
           }}
           onDeleted={() => {
             showToast('Matagumpay na na-delete ang kalahok.');
+          }}
+        />
+      )}
+
+      {/* Duplicate Resolver Modal */}
+      {isDuplicateResolverOpen && (
+        <DuplicateResolverModal
+          duplicateGroups={duplicateGroups}
+          onClose={() => setIsDuplicateResolverOpen(false)}
+          onResolved={(msg) => {
+            showToast(msg);
           }}
         />
       )}
