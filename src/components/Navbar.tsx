@@ -56,9 +56,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attende
             {!isAdmin && (
               <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-[#0038A8] animate-pulse" />
-                <span>Oct. 13, 2026 (8am - 9pm)</span>
+                <span>Oktubre 13, 2026 (8am - 5pm)</span>
                 <span className="text-slate-300">•</span>
-                <span className="text-[#0038A8]">Met Sports Park</span>
+                <span className="text-[#0038A8]">Met Sports Park Center</span>
               </div>
             )}
 

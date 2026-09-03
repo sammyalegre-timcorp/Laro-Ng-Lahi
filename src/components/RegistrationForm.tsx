@@ -169,7 +169,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
                   Petsa (Date)
                 </span>
                 <span className="text-sm font-black text-slate-900 leading-tight block">
-                  Oct. 13, 2026
+                  Oktubre 13, 2026
                 </span>
                 <span className="text-[10px] text-slate-500 font-medium leading-none block">
                   Martes (Tuesday)
@@ -187,7 +187,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
                   Oras (Time)
                 </span>
                 <span className="text-sm font-black text-slate-900 leading-tight block">
-                  8:00 am - 9:00 pm
+                  8:00 am - 5:00 pm
                 </span>
                 <span className="text-[10px] text-slate-500 font-medium leading-none block">
                   Assembly: 7:30 AM
@@ -205,7 +205,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess })
                   Lugar (Venue)
                 </span>
                 <span className="text-xs font-black text-[#0038A8] leading-tight block">
-                  Met Sports Park
+                  Met Sports Park Center
                 </span>
                 <span className="text-[10px] text-slate-500 font-medium leading-none block">
                   Pasay City, Metro Manila

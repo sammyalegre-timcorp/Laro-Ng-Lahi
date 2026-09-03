@@ -157,14 +157,14 @@ export const RegistrationSuccess: React.FC<RegistrationSuccessProps> = ({
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-[#0038A8] shrink-0" />
                 <div>
-                  <span className="font-black text-slate-900 block">Oct. 13, 2026</span>
+                  <span className="font-black text-slate-900 block">Oktubre 13, 2026</span>
                   <span className="text-[10px] text-slate-500">Martes (Tuesday)</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-[#CE1126] shrink-0" />
                 <div>
-                  <span className="font-black text-slate-900 block">8:00 am - 9:00 pm</span>
+                  <span className="font-black text-slate-900 block">8:00 am - 5:00 pm</span>
                   <span className="text-[10px] text-slate-500">Assembly: 7:30 AM</span>
                 </div>
               </div>
@@ -172,15 +172,15 @@ export const RegistrationSuccess: React.FC<RegistrationSuccessProps> = ({
             <div className="pt-2 border-t border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-[#00A86B] shrink-0" />
-                <span className="font-black text-[#0038A8]">Met Sports Park, Pasay City</span>
+                <span className="font-black text-[#0038A8]">Met Sports Park Center, Pasay City</span>
               </div>
               <a
-                href="https://www.google.com/maps/search/?api=1&query=Met+Sports+Park+Pasay"
+                href="https://www.google.com/maps/place/Met+Park+Sports+Center/@14.532391,120.985929,17z/data=!3m1!4b1!4m6!3m5!1s0x3397cbf6d43d1797:0x22806ceb528b931!8m2!3d14.532391!4d120.985929!16s%2Fg%2F11b6_c8x0k"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0038A8] hover:underline"
               >
-                <span>Tingnan sa Google Maps</span>
+                <span>Tingnan ang Pin sa Google Maps</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
             </div>

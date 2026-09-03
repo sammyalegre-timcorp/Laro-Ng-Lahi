@@ -114,9 +114,9 @@ export const RegistrationCountdown: React.FC = () => {
             </p>
             <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-white/10 border border-white/15 text-xs text-amber-200 font-bold">
               <span>📅 Araw ng Palaro:</span>
-              <span className="text-white font-black">Oct. 13, 2026 (8:00 am - 9:00 pm)</span>
+              <span className="text-white font-black">Oktubre 13, 2026 (8:00 am - 5:00 pm)</span>
               <span>•</span>
-              <span className="text-[#FFCD00]">Met Sports Park</span>
+              <span className="text-[#FFCD00]">Met Sports Park Center</span>
             </div>
           </div>
         </div>
