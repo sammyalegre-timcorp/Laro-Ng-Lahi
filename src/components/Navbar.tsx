@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users } from 'lucide-react';
+import { Users, UserPlus, Shield } from 'lucide-react';
 
 interface NavbarProps {
   currentPath: string;
@@ -9,9 +9,11 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attendeeCount = 0 }) => {
   const isAdmin = currentPath === '/admin';
+  const isTshirt = currentPath === '/tshirt';
+  const isRegister = currentPath === '/' || (!isAdmin && !isTshirt);
 
   return (
-    <header className="sticky top-3 z-40 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-3xl shadow-[0_10px_30px_rgba(0,56,168,0.06)] overflow-hidden">
+    <header className="sticky top-3 z-40 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-3xl shadow-[0_10px_30px_rgba(0,56,168,0.06)] overflow-hidden print:hidden">
       {/* Top Tri-Color Edge */}
       <div className="h-1.5 w-full flex">
         <div className="flex-1 bg-[#0038A8]"></div>
@@ -45,15 +47,44 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attende
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest hidden sm:block">
-                {isAdmin ? 'Admin Management & Operations Portal' : 'Corporate Inter-Departmental Sports • Palarong Pinoy'}
+                {isAdmin
+                  ? 'Admin Management & Operations Portal'
+                  : isTshirt
+                  ? 'Opisyal na Pagpili ng Sukat ng Jersey'
+                  : 'Corporate Inter-Departmental Sports • Palarong Pinoy'}
               </p>
             </div>
           </div>
 
-          {/* Right Side Header Controls */}
-          <div className="flex items-center gap-3">
-            {/* Event Schedule Chip for Registrants */}
-            {!isAdmin && (
+          {/* Navigation Controls */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* If on admin view, allow switching back or showing admin pill */}
+            {isAdmin ? (
+              <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-black">
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/')}
+                  className="px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>Rehistro</span>
+                </button>
+                <div className="px-3 py-1.5 rounded-xl bg-slate-900 text-white shadow-xs flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Admin</span>
+                </div>
+              </div>
+            ) : isTshirt ? (
+              <button
+                type="button"
+                onClick={() => onNavigate('/')}
+                className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <UserPlus className="w-3.5 h-3.5 text-[#0038A8]" />
+                <span>Bumalik sa Rehistro</span>
+              </button>
+            ) : (
+              /* Normal registration view - Event schedule chip */
               <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-[#0038A8] animate-pulse" />
                 <span>Oktubre 13, 2026 (8am - 5pm)</span>
@@ -62,9 +93,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attende
               </div>
             )}
 
-            {/* Live attendee count indicator - only on admin view */}
+            {/* Live attendee count indicator - on admin view */}
             {isAdmin && attendeeCount > 0 && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 text-xs font-bold">
+              <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 text-xs font-bold">
                 <span className="w-2 h-2 rounded-full bg-[#00A86B] animate-pulse" />
                 <Users className="w-3.5 h-3.5 text-[#0038A8]" />
                 <span>{attendeeCount} Registered</span>

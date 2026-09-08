@@ -17,11 +17,13 @@ import { Registration } from '../types';
 interface RegistrationSuccessProps {
   registration: Registration;
   onRegisterAnother: () => void;
+  onNavigate?: (path: string) => void;
 }
 
 export const RegistrationSuccess: React.FC<RegistrationSuccessProps> = ({
   registration,
-  onRegisterAnother
+  onRegisterAnother,
+  onNavigate
 }) => {
   useEffect(() => {
     // Fire festive fiesta confetti
@@ -53,7 +55,7 @@ export const RegistrationSuccess: React.FC<RegistrationSuccessProps> = ({
   return (
     <div className="max-w-xl mx-auto px-4 py-8 sm:py-12">
       {/* Success banner */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-6">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#00A86B]/10 text-[#00A86B] mb-4 shadow-lg border border-[#00A86B]/20 animate-bounce">
           <CheckCircle className="w-10 h-10" />
         </div>

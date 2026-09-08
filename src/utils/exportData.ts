@@ -24,6 +24,8 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
     'Gender': r.gender,
     'Department': r.department || 'Other',
     'Assigned Team': r.assignedTeam || 'Unassigned',
+    'T-Shirt Fit': r.shirtGenderCut ? `${r.shirtGenderCut}'s Cut` : 'Pending',
+    'T-Shirt Size': r.shirtSize || 'Pending',
     'Medical / Health Notes': r.medicalNotes || 'None',
     'Status': r.status?.toUpperCase() || 'CONFIRMED',
     'Registered Date': r.createdAt ? new Date(r.createdAt).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' }) : '-'
@@ -43,6 +45,8 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
     { wch: 16 }, // Gender
     { wch: 24 }, // Department
     { wch: 22 }, // Team
+    { wch: 16 }, // T-Shirt Fit
+    { wch: 16 }, // T-Shirt Size
     { wch: 30 }, // Medical
     { wch: 14 }, // Status
     { wch: 22 }, // Date
@@ -71,6 +75,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
       'Age': '',
       'Gender': '',
       'Department': '',
+      'T-Shirt Size': '',
       'Medical Notes': ''
     });
 
@@ -83,6 +88,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
         'Age': m.age,
         'Gender': m.gender,
         'Department': m.department || '-',
+        'T-Shirt Size': m.shirtSize ? `${m.shirtGenderCut || 'Men'}'s ${m.shirtSize}` : 'Pending',
         'Medical Notes': m.medicalNotes || '-'
       });
     });
@@ -100,9 +106,69 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
     { wch: 8 },
     { wch: 14 },
     { wch: 24 },
+    { wch: 18 },
     { wch: 30 }
   ];
   XLSX.utils.book_append_sheet(wb, wsTeams, 'Team Rosters');
+
+  // 3. T-Shirt Supplier Summary Sheet
+  const SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'];
+  const tshirtSummaryData: any[] = [];
+  
+  const mensCount: Record<string, number> = {};
+  const womensCount: Record<string, number> = {};
+  SIZES.forEach(s => {
+    mensCount[s] = 0;
+    womensCount[s] = 0;
+  });
+  let pendingCount = 0;
+
+  registrations.forEach(r => {
+    if (!r.shirtSize) {
+      pendingCount++;
+      return;
+    }
+    const cut = r.shirtGenderCut === 'Women' ? 'Women' : 'Men';
+    const sz = r.shirtSize;
+    if (cut === 'Women') {
+      womensCount[sz] = (womensCount[sz] || 0) + 1;
+    } else {
+      mensCount[sz] = (mensCount[sz] || 0) + 1;
+    }
+  });
+
+  SIZES.forEach(size => {
+    tshirtSummaryData.push({
+      'Size': size,
+      "Men's Cut (Crew Neck) Quantity": mensCount[size] || 0,
+      "Women's Cut (V-Neck Fit) Quantity": womensCount[size] || 0,
+      'Total Quantity per Size': (mensCount[size] || 0) + (womensCount[size] || 0)
+    });
+  });
+
+  const totalMens = Object.values(mensCount).reduce((a, b) => a + b, 0);
+  const totalWomens = Object.values(womensCount).reduce((a, b) => a + b, 0);
+  tshirtSummaryData.push({
+    'Size': 'TOTAL ORDERED',
+    "Men's Cut (Crew Neck) Quantity": totalMens,
+    "Women's Cut (V-Neck Fit) Quantity": totalWomens,
+    'Total Quantity per Size': totalMens + totalWomens
+  });
+  tshirtSummaryData.push({
+    'Size': 'PENDING / NO SIZE SELECTED',
+    "Men's Cut (Crew Neck) Quantity": '-',
+    "Women's Cut (V-Neck Fit) Quantity": '-',
+    'Total Quantity per Size': pendingCount
+  });
+
+  const wsTshirt = XLSX.utils.json_to_sheet(tshirtSummaryData);
+  wsTshirt['!cols'] = [
+    { wch: 18 },
+    { wch: 32 },
+    { wch: 34 },
+    { wch: 26 }
+  ];
+  XLSX.utils.book_append_sheet(wb, wsTshirt, 'T-Shirt Supplier Orders');
 
   // Generate and download
   XLSX.writeFile(wb, `${filename}_${new Date().toISOString().slice(0, 10)}.xlsx`);
@@ -120,6 +186,8 @@ export function exportToCSV(registrations: Registration[], filename = 'Laro_ng_L
     'Gender',
     'Department',
     'Assigned Team',
+    'T-Shirt Fit',
+    'T-Shirt Size',
     'Medical / Health Notes',
     'Status',
     'Registered Date'
@@ -142,6 +210,8 @@ export function exportToCSV(registrations: Registration[], filename = 'Laro_ng_L
     escapeCSV(r.gender),
     escapeCSV(r.department || ''),
     escapeCSV(r.assignedTeam || 'Unassigned'),
+    escapeCSV(r.shirtGenderCut ? `${r.shirtGenderCut}'s Cut` : 'Pending'),
+    escapeCSV(r.shirtSize || 'Pending'),
     escapeCSV(r.medicalNotes || ''),
     escapeCSV(r.status || 'confirmed'),
     escapeCSV(r.createdAt ? new Date(r.createdAt).toLocaleString('en-PH') : '')

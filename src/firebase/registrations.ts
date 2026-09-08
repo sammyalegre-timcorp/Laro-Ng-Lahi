@@ -129,7 +129,9 @@ export function subscribeToRegistrations(
           employeeId: d.employeeId || '',
           email: d.email || '',
           phone: d.phone || '',
-          shirtSize: d.shirtSize || 'L',
+          shirtSize: d.shirtSize || '',
+          shirtGenderCut: d.shirtGenderCut || '',
+          shirtUpdatedDate: d.shirtUpdatedDate || '',
           favoriteGames: Array.isArray(d.favoriteGames) ? d.favoriteGames : [],
           medicalNotes: d.medicalNotes || '',
           emergencyContactName: d.emergencyContactName || '',
@@ -151,6 +153,19 @@ export function subscribeToRegistrations(
 export async function updateRegistration(id: string, updates: Partial<Registration>): Promise<void> {
   const docRef = doc(db, REGISTRATIONS_COLLECTION, id);
   await updateDoc(docRef, updates);
+}
+
+export async function saveAttendeeTShirtSize(
+  id: string,
+  shirtSize: string,
+  shirtGenderCut: 'Men' | 'Women' | string
+): Promise<void> {
+  const docRef = doc(db, REGISTRATIONS_COLLECTION, id);
+  await updateDoc(docRef, {
+    shirtSize,
+    shirtGenderCut,
+    shirtUpdatedDate: new Date().toISOString()
+  });
 }
 
 export async function deleteRegistration(id: string): Promise<void> {

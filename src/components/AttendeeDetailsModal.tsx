@@ -8,9 +8,10 @@ import {
   HeartPulse,
   Edit3,
   Mail,
-  AlertTriangle
+  AlertTriangle,
+  Shirt
 } from 'lucide-react';
-import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS } from '../types';
+import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS, DEPARTMENT_DETAILS, getDepartmentUnits, ALL_SHIRT_SIZES } from '../types';
 import { updateRegistration, deleteRegistration, findDuplicateRegistration } from '../firebase/registrations';
 import { getTeamBadgeStyle } from '../utils/teamUtils';
 
@@ -84,7 +85,10 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
         department: finalDepartment,
         assignedTeam: formData.assignedTeam || null,
         status: formData.status,
-        medicalNotes: formData.medicalNotes?.trim() || ''
+        medicalNotes: formData.medicalNotes?.trim() || '',
+        shirtGenderCut: formData.shirtGenderCut || null,
+        shirtSize: formData.shirtSize || null,
+        shirtUpdatedDate: formData.shirtSize ? (formData.shirtUpdatedDate || new Date().toISOString()) : null
       });
       setIsEditing(false);
       if (onUpdated) onUpdated();
@@ -192,20 +196,37 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
                   </select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">Departamento</label>
+                  <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">Departamento & Sakop na Units</label>
                   <select
                     value={formData.department}
                     onChange={e => setFormData({ ...formData, department: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-[#0038A8] outline-hidden font-medium cursor-pointer"
+                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-[#0038A8] outline-hidden font-medium cursor-pointer text-sm"
                   >
                     <option value="" disabled>-- Pumili ng Departamento --</option>
-                    {DEPARTMENTS.map(dept => (
-                      <option key={dept} value={dept}>{dept}</option>
-                    ))}
-                    {formData.department && !(DEPARTMENTS as readonly string[]).includes(formData.department) && (
+                    {DEPARTMENT_DETAILS.map(dept => {
+                      const unitsSummary = dept.units.length > 0 ? ` (${dept.units.join(', ')})` : '';
+                      return (
+                        <option key={dept.name} value={dept.name}>
+                          {dept.name}{unitsSummary}
+                        </option>
+                      );
+                    })}
+                    {formData.department && !DEPARTMENT_DETAILS.some(d => d.name === formData.department) && (
                       <option value={formData.department}>{formData.department}</option>
                     )}
                   </select>
+                  {getDepartmentUnits(formData.department).length > 0 && (
+                    <div className="mt-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
+                      <span className="font-bold text-slate-800 block mb-1">Mga Unit:</span>
+                      <div className="flex flex-wrap gap-1">
+                        {getDepartmentUnits(formData.department).map((u, idx) => (
+                          <span key={idx} className="bg-white px-2 py-0.5 rounded-md border border-slate-200 text-[11px] font-medium text-slate-700">
+                            {u}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">Assigned Team</label>
@@ -233,6 +254,39 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
                     <option value="cancelled">Cancelled</option>
                   </select>
                 </div>
+
+                {/* Jersey Size & Cut Selection */}
+                <div>
+                  <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">
+                    Tabas ng Jersey (Cut)
+                  </label>
+                  <select
+                    value={formData.shirtGenderCut || ''}
+                    onChange={e => setFormData({ ...formData, shirtGenderCut: (e.target.value as any) || null })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-[#0038A8] outline-hidden font-bold cursor-pointer"
+                  >
+                    <option value="">-- Hindi pa napili --</option>
+                    <option value="Men">Pang-Lalaki (Men's Size)</option>
+                    <option value="Women">Pang-Babae (Women's Size)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">
+                    Sukat ng Jersey (Size)
+                  </label>
+                  <select
+                    value={formData.shirtSize || ''}
+                    onChange={e => setFormData({ ...formData, shirtSize: (e.target.value as any) || null })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-[#0038A8] outline-hidden font-bold cursor-pointer"
+                  >
+                    <option value="">-- Hindi pa napili --</option>
+                    {ALL_SHIRT_SIZES.map(sz => (
+                      <option key={sz} value={sz}>{sz}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="sm:col-span-2">
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500">
@@ -308,6 +362,34 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
                   <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 block">Status</span>
                   <span className="text-xs font-black text-[#00A86B] block mt-1 uppercase">{attendee.status}</span>
                 </div>
+              </div>
+
+              {/* Jersey Size Information */}
+              <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white text-[#0038A8] flex items-center justify-center shadow-xs border border-blue-200/60">
+                    <Shirt className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 block">
+                      Opisyal na Sukat ng Jersey
+                    </span>
+                    {attendee.shirtSize ? (
+                      <span className="text-sm font-black text-[#0038A8]">
+                        {attendee.shirtGenderCut === 'Women' ? 'Pang-Babae' : 'Pang-Lalaki'} • Sukat: <span className="bg-[#0038A8] text-white px-2 py-0.5 rounded-md ml-1">{attendee.shirtSize}</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs font-bold text-amber-600 italic">
+                        Hindi pa pumipili sa portal ng sukat ng jersey
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {attendee.shirtUpdatedDate && (
+                  <span className="text-[10px] text-slate-400 font-medium hidden sm:inline">
+                    Na-update: {new Date(attendee.shirtUpdatedDate).toLocaleDateString('en-PH')}
+                  </span>
+                )}
               </div>
 
               {/* Medical Notes */}

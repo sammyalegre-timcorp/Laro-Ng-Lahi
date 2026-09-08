@@ -1,20 +1,146 @@
+export interface DepartmentItem {
+  name: string;
+  units: string[];
+}
+
+export const DEPARTMENT_DETAILS: DepartmentItem[] = [
+  {
+    name: 'Management',
+    units: []
+  },
+  {
+    name: 'Value Added Services',
+    units: [
+      'VAS Sales',
+      'VAS Technology Solutions',
+      'VAS Products and Innovation',
+      'VAS Operations',
+      'VAS Channel & Partnerships'
+    ]
+  },
+  {
+    name: 'Financial Services and Investment Banking (SI)',
+    units: [
+      'FSI Sales',
+      'FSI Technology Solutions'
+    ]
+  },
+  {
+    name: 'Enterprise Sales (Non-Banking) (SI)',
+    units: [
+      'ENT Sales',
+      'ENT Technology Solutions'
+    ]
+  },
+  {
+    name: 'Technology Solutions and ICT Products',
+    units: []
+  },
+  {
+    name: 'Customer Success and Service Delivery Management',
+    units: [
+      'Customer Excellence & Operations',
+      'Service Delivery Management',
+      'Managed Services Monitoring and Operations – Managed Systems',
+      'Managed Services Monitoring and Operations – Managed SOC',
+      'Managed Services Monitoring and Operations – SOC Engineering',
+      'Managed Services Monitoring and Operations – Managed NOC',
+      'Nexusguard'
+    ]
+  },
+  {
+    name: 'Technical Solutions Delivery',
+    units: [
+      'TSD – Cloud Ops, L2/L3',
+      'TSD – Cloud Engineering',
+      'TSD – Cloud Security',
+      'TSD – Offensive Security (Red Team)',
+      'TSD – SI Network Security',
+      'TSD – SI Systems',
+      'TSD – SI Tools & Apps'
+    ]
+  },
+  {
+    name: 'Operations',
+    units: [
+      'Operations Excellence',
+      'Sales Excellence',
+      'Billing & Collection'
+    ]
+  },
+  {
+    name: 'Project Management Office',
+    units: [
+      'Project Management Office',
+      'Program Management',
+      'Business and Systems Consultant Unit',
+      'PMO Operations',
+      'Mondelez'
+    ]
+  },
+  {
+    name: 'Marketing',
+    units: []
+  },
+  {
+    name: 'Governance, Risk, Compliance and Information Security',
+    units: [
+      'GRC',
+      'GRC Information Security'
+    ]
+  },
+  {
+    name: 'Information and Communications Technology',
+    units: [
+      'IT Security Operations',
+      'Network Engineering',
+      'Network Operations'
+    ]
+  },
+  {
+    name: 'Organizational Capability and Design',
+    units: [
+      'OCD',
+      'TIM Sales Acceleration Program (TSAP)'
+    ]
+  }
+];
+
 export const DEPARTMENTS = [
+  'Management',
+  'Value Added Services',
+  'Financial Services and Investment Banking (SI)',
+  'Enterprise Sales (Non-Banking) (SI)',
+  'Technology Solutions and ICT Products',
   'Customer Success and Service Delivery Management',
-  'Enterprise Sales/Non-Banking',
-  'Financial Services Industry/Banking',
+  'Technical Solutions Delivery',
+  'Operations',
+  'Project Management Office',
+  'Marketing',
   'Governance, Risk, Compliance and Information Security',
   'Information and Communications Technology',
-  'Management',
-  'Marketing',
-  'Operations',
-  'Organizational Capability and Design',
-  'Project Management Office',
-  'Technical Solutions Deliver',
-  'Technology Solutions and SI Products',
-  'Value Added Services'
+  'Organizational Capability and Design'
 ] as const;
 
 export type Department = typeof DEPARTMENTS[number];
+
+/**
+ * Returns the unit descriptions for a department, with tolerant matching for legacy department names.
+ */
+export function getDepartmentUnits(departmentName: string): string[] {
+  if (!departmentName) return [];
+  const normalized = departmentName.trim().toLowerCase();
+  const match = DEPARTMENT_DETAILS.find(d => {
+    const dName = d.name.toLowerCase();
+    if (dName === normalized) return true;
+    if (normalized.includes('financial services') && dName.includes('financial services')) return true;
+    if (normalized.includes('enterprise sales') && dName.includes('enterprise sales')) return true;
+    if (normalized.includes('technical solutions') && dName.includes('technical solutions')) return true;
+    if (normalized.includes('technology solutions') && dName.includes('technology solutions')) return true;
+    return false;
+  });
+  return match?.units || [];
+}
 
 export interface Registration {
   id?: string;
@@ -34,10 +160,45 @@ export interface Registration {
   email?: string;
   phone?: string;
   shirtSize?: string;
+  shirtGenderCut?: 'Men' | 'Women' | string;
+  shirtUpdatedDate?: string;
   favoriteGames?: string[];
   emergencyContactName?: string;
   emergencyContactPhone?: string;
 }
+
+export interface ShirtMeasurement {
+  size: string;
+  length: number; // inches
+  widthPaikot: number; // circumference in inches
+  flatWidth: number; // flat chest / armpit to armpit (widthPaikot / 2) in inches
+}
+
+export const MENS_SHIRT_SIZES: ShirtMeasurement[] = [
+  { size: 'XS', length: 27, widthPaikot: 36, flatWidth: 18 },
+  { size: 'S', length: 28, widthPaikot: 38, flatWidth: 19 },
+  { size: 'M', length: 29, widthPaikot: 40, flatWidth: 20 },
+  { size: 'L', length: 30, widthPaikot: 42, flatWidth: 21 },
+  { size: 'XL', length: 31, widthPaikot: 44, flatWidth: 22 },
+  { size: '2XL', length: 32, widthPaikot: 46, flatWidth: 23 },
+  { size: '3XL', length: 33, widthPaikot: 48, flatWidth: 24 },
+  { size: '4XL', length: 34, widthPaikot: 50, flatWidth: 25 },
+  { size: '5XL', length: 35, widthPaikot: 52, flatWidth: 26 },
+];
+
+export const WOMENS_SHIRT_SIZES: ShirtMeasurement[] = [
+  { size: 'XS', length: 24, widthPaikot: 34, flatWidth: 17 },
+  { size: 'S', length: 25, widthPaikot: 36, flatWidth: 18 },
+  { size: 'M', length: 26, widthPaikot: 38, flatWidth: 19 },
+  { size: 'L', length: 27, widthPaikot: 40, flatWidth: 20 },
+  { size: 'XL', length: 28, widthPaikot: 42, flatWidth: 21 },
+  { size: '2XL', length: 29, widthPaikot: 44, flatWidth: 22 },
+  { size: '3XL', length: 30, widthPaikot: 46, flatWidth: 23 },
+  { size: '4XL', length: 31, widthPaikot: 48, flatWidth: 24 },
+  { size: '5XL', length: 32, widthPaikot: 50, flatWidth: 25 },
+];
+
+export const ALL_SHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'] as const;
 
 export interface GameMasterAssignment {
   id?: string;

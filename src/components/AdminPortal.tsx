@@ -21,7 +21,8 @@ import {
   CheckSquare,
   Square,
   Palette,
-  Mail
+  Mail,
+  Shirt
 } from 'lucide-react';
 import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS } from '../types';
 import { exportToExcel, exportToCSV, getAgeBracket } from '../utils/exportData';
@@ -148,7 +149,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         otherCount: 0,
         ageGroups: { under25: 0, b25_34: 0, b35_44: 0, b45_54: 0, b55plus: 0 },
         assignedCount: 0,
-        withMedicalNotes: 0
+        withMedicalNotes: 0,
+        withShirtSize: 0,
+        pendingShirtSize: 0
       };
     }
 
@@ -159,6 +162,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     const otherCount = total - maleCount - femaleCount;
     const assignedCount = registrations.filter(r => Boolean(r.assignedTeam)).length;
     const withMedicalNotes = registrations.filter(r => Boolean(r.medicalNotes && r.medicalNotes.trim())).length;
+    const withShirtSize = registrations.filter(r => Boolean(r.shirtSize)).length;
+    const pendingShirtSize = total - withShirtSize;
 
     const ageGroups = {
       under25: registrations.filter(r => r.age < 25).length,
@@ -176,7 +181,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       otherCount,
       ageGroups,
       assignedCount,
-      withMedicalNotes
+      withMedicalNotes,
+      withShirtSize,
+      pendingShirtSize
     };
   }, [registrations]);
 
@@ -191,7 +198,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         (r.email && r.email.toLowerCase().includes(search)) ||
         (r.department && r.department.toLowerCase().includes(search)) ||
         (r.medicalNotes && r.medicalNotes.toLowerCase().includes(search)) ||
-        (r.assignedTeam && r.assignedTeam.toLowerCase().includes(search));
+        (r.assignedTeam && r.assignedTeam.toLowerCase().includes(search)) ||
+        (r.shirtSize && r.shirtSize.toLowerCase().includes(search)) ||
+        (r.shirtGenderCut && r.shirtGenderCut.toLowerCase().includes(search));
 
       // Department Filter
       const matchesDept = selectedDepartment === 'all' || r.department?.toLowerCase() === selectedDepartment.toLowerCase();
@@ -386,7 +395,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       </div>
 
       {/* Metric Cards Dashboard */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Registered */}
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-[0_20px_50px_rgba(0,56,168,0.05)] relative overflow-hidden">
           <div className="flex items-center justify-between">
@@ -403,6 +412,25 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           </div>
           <p className="text-[11px] text-[#00A86B] font-bold mt-1">
             {stats.assignedCount} / {stats.total} naka-assign sa koponan
+          </p>
+        </div>
+
+        {/* Jersey Sizes Collected */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-[0_20px_50px_rgba(0,56,168,0.05)] relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Sukat ng Jersey</span>
+            <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+              <Shirt className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-3xl font-black text-[#0038A8]">
+              {stats.withShirtSize}
+            </span>
+            <span className="text-xs text-slate-400 font-bold uppercase">/ {stats.total}</span>
+          </div>
+          <p className="text-[11px] text-amber-600 font-bold mt-1">
+            {stats.pendingShirtSize > 0 ? `${stats.pendingShirtSize} kalahok pa ang walang sukat` : 'Kumpleto na ang lahat! 🎉'}
           </p>
         </div>
 
@@ -716,6 +744,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   <th className="p-4 text-center">Edad & Kasarian</th>
                   <th className="p-4">Departamento</th>
                   <th className="p-4">Koponan (Team Assignment)</th>
+                  <th className="p-4">Sukat ng Jersey</th>
                   <th className="p-4">Medical Notes</th>
                   <th className="p-4 text-right">Aksyon</th>
                 </tr>
@@ -723,7 +752,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <tbody className="divide-y divide-slate-100">
                 {filteredAttendees.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-12 text-center text-slate-400">
+                    <td colSpan={8} className="p-12 text-center text-slate-400">
                       <div className="max-w-sm mx-auto space-y-2">
                         <span className="text-4xl block">🔍</span>
                         <p className="font-bold text-slate-700">Walang nahanap na kalahok.</p>
@@ -837,6 +866,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                               </select>
                             );
                           })()}
+                        </td>
+
+                        {/* T-Shirt Size */}
+                        <td className="p-4 whitespace-nowrap">
+                          {attendee.shirtSize ? (
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-blue-50 border border-blue-200/80 text-[#0038A8] text-xs font-black">
+                              <Shirt className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                              <span>{attendee.shirtGenderCut === 'Women' ? 'W' : 'M'} • {attendee.shirtSize}</span>
+                            </div>
+                          ) : (
+                            <span className="text-[11px] font-bold text-amber-600/80 italic">
+                              Pending
+                            </span>
+                          )}
                         </td>
 
                         {/* Medical Notes */}

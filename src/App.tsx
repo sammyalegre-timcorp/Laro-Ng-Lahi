@@ -4,18 +4,19 @@ import { Navbar } from './components/Navbar';
 import { RegistrationForm } from './components/RegistrationForm';
 import { RegistrationSuccess } from './components/RegistrationSuccess';
 import { AdminPortal } from './components/AdminPortal';
+import { TShirtPortal } from './components/TShirtPortal';
 import { Footer } from './components/Footer';
 import { Registration, Team, DEFAULT_TEAMS } from './types';
 import { subscribeToRegistrations } from './firebase/registrations';
 import { subscribeToTeams } from './firebase/teams';
 
-function checkIsAdminRoute(): boolean {
-  if (typeof window === 'undefined') return false;
+function getInitialRoute(): string {
+  if (typeof window === 'undefined') return '/';
   const pathname = window.location.pathname.toLowerCase().replace(/\/+$/, '');
   const hash = window.location.hash.toLowerCase();
   const searchParams = new URLSearchParams(window.location.search);
 
-  return (
+  if (
     pathname === '/admin' ||
     pathname.endsWith('/admin') ||
     hash === '#admin' ||
@@ -23,13 +24,34 @@ function checkIsAdminRoute(): boolean {
     searchParams.get('page')?.toLowerCase() === 'admin' ||
     searchParams.get('tab')?.toLowerCase() === 'admin' ||
     searchParams.has('admin')
-  );
+  ) {
+    return '/admin';
+  }
+
+  if (
+    pathname === '/tshirt' ||
+    pathname === '/tshirts' ||
+    pathname === '/tshirt-sizes' ||
+    pathname.endsWith('/tshirt') ||
+    pathname.endsWith('/tshirt-sizes') ||
+    hash === '#tshirt' ||
+    hash === '#/tshirt' ||
+    hash === '#tshirts' ||
+    hash === '#tshirt-sizes' ||
+    searchParams.get('page')?.toLowerCase() === 'tshirt' ||
+    searchParams.get('tab')?.toLowerCase() === 'tshirt' ||
+    searchParams.has('tshirt')
+  ) {
+    return '/tshirt';
+  }
+
+  return '/';
 }
 
 export default function App() {
   // Routing state
   const [currentPath, setCurrentPath] = useState<string>(() => {
-    return checkIsAdminRoute() ? '/admin' : '/';
+    return getInitialRoute();
   });
 
   // Registrations state from Firebase Firestore
@@ -47,6 +69,8 @@ export default function App() {
     try {
       if (path === '/admin') {
         window.history.pushState({}, '', '/admin');
+      } else if (path === '/tshirt') {
+        window.history.pushState({}, '', '/tshirt');
       } else {
         window.history.pushState({}, '', '/');
       }
@@ -54,6 +78,8 @@ export default function App() {
       // Fallback for strict iframe environments
       if (path === '/admin') {
         window.location.hash = 'admin';
+      } else if (path === '/tshirt') {
+        window.location.hash = 'tshirt';
       } else {
         window.location.hash = '';
       }
@@ -63,7 +89,7 @@ export default function App() {
 
   useEffect(() => {
     const handleLocationChange = () => {
-      setCurrentPath(checkIsAdminRoute() ? '/admin' : '/');
+      setCurrentPath(getInitialRoute());
     };
 
     window.addEventListener('popstate', handleLocationChange);
@@ -122,7 +148,7 @@ export default function App() {
       {/* Outer Centered Container with spacious margins on all four sides */}
       <div className="w-full max-w-7xl mx-auto flex flex-col flex-1">
         {/* Festive Banderitas Top Streamer */}
-        <div className="mb-3">
+        <div className="mb-3 print:hidden">
           <Banderitas />
         </div>
 
@@ -143,18 +169,27 @@ export default function App() {
               loading={loading}
               error={error}
             />
+          ) : currentPath === '/tshirt' ? (
+            /* Dedicated T-Shirt & Polo Sizes Page at /tshirt */
+            <TShirtPortal
+              registrations={registrations}
+              teams={teams}
+              onNavigate={navigate}
+            />
           ) : (
             /* Registration Portal Page at / */
             submittedRegistration ? (
               <RegistrationSuccess
                 registration={submittedRegistration}
                 onRegisterAnother={handleRegisterAnother}
+                onNavigate={navigate}
               />
             ) : (
               <RegistrationForm
                 onSuccess={handleRegistrationSuccess}
                 attendeeCount={registrations.length}
                 registrations={registrations}
+                onNavigate={navigate}
               />
             )
           )}
