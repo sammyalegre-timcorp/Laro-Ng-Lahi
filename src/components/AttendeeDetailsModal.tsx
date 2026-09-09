@@ -12,6 +12,7 @@ import {
   Shirt
 } from 'lucide-react';
 import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS, DEPARTMENT_DETAILS, getDepartmentUnits, ALL_SHIRT_SIZES } from '../types';
+import { DepartmentDropdown } from './DepartmentDropdown';
 import { updateRegistration, deleteRegistration, findDuplicateRegistration } from '../firebase/registrations';
 import { getTeamBadgeStyle } from '../utils/teamUtils';
 
@@ -197,36 +198,11 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">Departamento & Sakop na Units</label>
-                  <select
+                  <DepartmentDropdown
                     value={formData.department}
-                    onChange={e => setFormData({ ...formData, department: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-[#0038A8] outline-hidden font-medium cursor-pointer text-sm"
-                  >
-                    <option value="" disabled>-- Pumili ng Departamento --</option>
-                    {DEPARTMENT_DETAILS.map(dept => {
-                      const unitsSummary = dept.units.length > 0 ? ` (${dept.units.join(', ')})` : '';
-                      return (
-                        <option key={dept.name} value={dept.name}>
-                          {dept.name}{unitsSummary}
-                        </option>
-                      );
-                    })}
-                    {formData.department && !DEPARTMENT_DETAILS.some(d => d.name === formData.department) && (
-                      <option value={formData.department}>{formData.department}</option>
-                    )}
-                  </select>
-                  {getDepartmentUnits(formData.department).length > 0 && (
-                    <div className="mt-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
-                      <span className="font-bold text-slate-800 block mb-1">Mga Unit:</span>
-                      <div className="flex flex-wrap gap-1">
-                        {getDepartmentUnits(formData.department).map((u, idx) => (
-                          <span key={idx} className="bg-white px-2 py-0.5 rounded-md border border-slate-200 text-[11px] font-medium text-slate-700">
-                            {u}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                    onChange={val => setFormData({ ...formData, department: val })}
+                    placeholder="-- Pumili ng Departamento --"
+                  />
                 </div>
                 <div>
                   <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">Assigned Team</label>

@@ -14,11 +14,10 @@ import {
   CheckCircle2,
   Info,
   Mail,
-  AlertTriangle,
-  ChevronDown,
-  ChevronUp
+  AlertTriangle
 } from 'lucide-react';
 import { Registration, DEPARTMENTS, DEPARTMENT_DETAILS, getDepartmentUnits } from '../types';
+import { DepartmentDropdown } from './DepartmentDropdown';
 import { submitRegistration, findDuplicateRegistration } from '../firebase/registrations';
 import { RegistrationCountdown, REGISTRATION_DEADLINE_MS } from './RegistrationCountdown';
 import { EventLocationMap } from './EventLocationMap';
@@ -27,9 +26,14 @@ interface RegistrationFormProps {
   onSuccess: (registrationData: Registration, docId: string) => void;
   attendeeCount?: number;
   registrations?: Registration[];
+  onNavigate?: (path: string) => void;
 }
 
-export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess, registrations = [] }) => {
+export const RegistrationForm: React.FC<RegistrationFormProps> = ({
+  onSuccess,
+  registrations = [],
+  onNavigate
+}) => {
   const [formData, setFormData] = useState({
     fullName: '',
     nickname: '',
@@ -42,7 +46,6 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess, r
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [showDeptDirectory, setShowDeptDirectory] = useState(false);
 
   const isRegistrationClosed = Date.now() >= REGISTRATION_DEADLINE_MS;
 
@@ -421,126 +424,18 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess, r
               </div>
             </div>
 
-            {/* Department Dropdown with Units Descriptions */}
+            {/* Department Dropdown with 2-line options matching user design */}
             <div>
-              <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
-                <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-1.5">
-                  <Building className="w-3.5 h-3.5 text-[#0038A8]" />
-                  <span>Departamento / Unit (Pumili ng Departamento) <span className="text-[#CE1126]">*</span></span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowDeptDirectory(prev => !prev)}
-                  className="text-[10px] font-bold text-[#0038A8] hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-full border border-blue-200 inline-flex items-center gap-1 transition-colors cursor-pointer"
-                >
-                  <Info className="w-3 h-3 text-[#0038A8]" />
-                  <span>{showDeptDirectory ? 'Itago ang Gabay' : 'Tingnan Lahat ng Sakop na Unit'}</span>
-                  {showDeptDirectory ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                </button>
-              </div>
+              <label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5 tracking-widest flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5 text-[#0038A8]" />
+                <span>Departamento / Unit (Pumili ng Departamento) <span className="text-[#CE1126]">*</span></span>
+              </label>
 
-              <div className="relative">
-                <Building className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <select
-                  required
-                  value={formData.department}
-                  onChange={e => setFormData(prev => ({ ...prev, department: e.target.value }))}
-                  className="w-full pl-11 pr-10 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-[#0038A8] focus:bg-white focus:outline-none transition-colors font-medium text-slate-900 text-sm cursor-pointer"
-                >
-                  <option value="" disabled>-- Pumili ng Departamento (Select Department) --</option>
-                  {DEPARTMENT_DETAILS.map(dept => {
-                    const preview = dept.units.length > 0 ? ` — (${dept.units.join(', ')})` : '';
-                    return (
-                      <option key={dept.name} value={dept.name}>
-                        {dept.name}{preview}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-
-              {/* Active Selected Department Descriptions / Units */}
-              {selectedDeptUnits.length > 0 && (
-                <div className="mt-2.5 p-3.5 rounded-2xl bg-blue-50/80 border border-blue-200/90 text-blue-950 animate-in fade-in slide-in-from-top-1 duration-200">
-                  <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-blue-200/60">
-                    <span className="text-[11px] font-black text-[#0038A8] uppercase tracking-wider flex items-center gap-1.5">
-                      <Building className="w-3.5 h-3.5 text-[#0038A8]" />
-                      <span>Mga Sakop na Unit sa {formData.department}:</span>
-                    </span>
-                    <span className="text-[10px] font-black text-blue-700 bg-white px-2 py-0.5 rounded-full border border-blue-200">
-                      {selectedDeptUnits.length} {selectedDeptUnits.length === 1 ? 'Unit' : 'Units'}
-                    </span>
-                  </div>
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                    {selectedDeptUnits.map((unit, idx) => (
-                      <li key={idx} className="flex items-start gap-1.5 text-xs text-slate-700 font-medium">
-                        <span className="text-[#0038A8] font-black shrink-0 mt-0.5">•</span>
-                        <span className="leading-snug">{unit}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="text-[10px] text-blue-700/80 font-medium mt-2 pt-1.5 border-t border-blue-200/50">
-                    ✓ Ang mga unit na ito ay kabilang sa iyong napiling departamento para sa balanse at makatarungang Team Allocation.
-                  </p>
-                </div>
-              )}
-
-              {/* Collapsible Departments & Units Directory Hierarchy */}
-              {showDeptDirectory && (
-                <div className="mt-2.5 p-4 rounded-2xl bg-slate-50 border-2 border-blue-100 text-xs text-slate-700 space-y-2.5 max-h-80 overflow-y-auto shadow-inner animate-in fade-in duration-200">
-                  <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                    <div>
-                      <span className="font-black text-slate-900 uppercase tracking-wider text-[11px] block">
-                        Gabay sa mga Departamento at Sakop na Units
-                      </span>
-                      <span className="text-[10px] text-slate-500">I-click ang departamento upang awtomatikong mapili ito sa form.</span>
-                    </div>
-                  </div>
-                  <div className="space-y-2 pt-1">
-                    {DEPARTMENT_DETAILS.map(dept => {
-                      const isSelected = formData.department === dept.name;
-                      return (
-                        <div
-                          key={dept.name}
-                          onClick={() => {
-                            setFormData(prev => ({ ...prev, department: dept.name }));
-                          }}
-                          className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
-                            isSelected
-                              ? 'bg-blue-50/90 border-[#0038A8] text-blue-950 ring-2 ring-[#0038A8]/30 shadow-xs'
-                              : 'bg-white border-slate-200 hover:border-blue-300 hover:bg-blue-50/40'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-black text-slate-900 text-xs flex items-center gap-1.5">
-                              <span className={`w-2 h-2 rounded-full shrink-0 ${isSelected ? 'bg-[#0038A8]' : 'bg-slate-300'}`} />
-                              {dept.name}
-                            </span>
-                            {isSelected ? (
-                              <span className="text-[10px] font-black text-[#0038A8] bg-blue-100/80 px-2 py-0.5 rounded-md border border-blue-200">
-                                Napili na ✓
-                              </span>
-                            ) : (
-                              <span className="text-[10px] text-slate-400 font-bold group-hover:text-blue-600">
-                                Pindutin para piliin
-                              </span>
-                            )}
-                          </div>
-                          {dept.units.length > 0 && (
-                            <ul className="mt-1.5 pl-3.5 space-y-0.5 border-t border-slate-100 pt-1">
-                              {dept.units.map((unit, uIdx) => (
-                                <li key={uIdx} className="text-[11px] text-slate-600 font-medium list-disc">
-                                  {unit}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              <DepartmentDropdown
+                value={formData.department}
+                onChange={val => setFormData(prev => ({ ...prev, department: val }))}
+                required
+              />
             </div>
 
             {/* Medical Notes / Physical Restrictions */}

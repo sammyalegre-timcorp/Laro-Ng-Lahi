@@ -2,11 +2,11 @@ import React from 'react';
 import { Heart } from 'lucide-react';
 
 interface FooterProps {
-  currentPath: string;
-  onNavigate: (path: string) => void;
+  currentPath?: string;
+  onNavigate?: (path: string) => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ currentPath, onNavigate }) => {
+export const Footer: React.FC<FooterProps> = () => {
   return (
     <footer className="mt-12 bg-white border border-slate-200/90 rounded-3xl shadow-[0_10px_30px_rgba(0,56,168,0.04)] text-slate-600 text-xs overflow-hidden print:hidden">
       {/* Upper Content Area */}
@@ -28,24 +28,10 @@ export const Footer: React.FC<FooterProps> = ({ currentPath, onNavigate }) => {
         </div>
 
         {/* Right footer status */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 text-slate-500">
-          <div className="flex items-center gap-1.5 text-slate-400 font-medium select-none">
-            <span>Gawa nang may</span>
-            <Heart className="w-3.5 h-3.5 text-[#CE1126] fill-[#CE1126]" />
-            <span>para sa Palarong Pinoy</span>
-          </div>
-
-          {currentPath !== '/' && (
-            <div className="flex items-center text-xs font-bold">
-              <button
-                type="button"
-                onClick={() => onNavigate('/')}
-                className="text-[#0038A8] hover:underline cursor-pointer"
-              >
-                ← Bumalik sa Registration
-              </button>
-            </div>
-          )}
+        <div className="flex items-center gap-1.5 text-slate-400 font-medium select-none">
+          <span>Gawa nang may</span>
+          <Heart className="w-3.5 h-3.5 text-[#CE1126] fill-[#CE1126]" />
+          <span>para sa Palarong Pinoy</span>
         </div>
       </div>
 

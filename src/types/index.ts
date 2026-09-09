@@ -1,41 +1,10 @@
 export interface DepartmentItem {
   name: string;
   units: string[];
+  description: string;
 }
 
 export const DEPARTMENT_DETAILS: DepartmentItem[] = [
-  {
-    name: 'Management',
-    units: []
-  },
-  {
-    name: 'Value Added Services',
-    units: [
-      'VAS Sales',
-      'VAS Technology Solutions',
-      'VAS Products and Innovation',
-      'VAS Operations',
-      'VAS Channel & Partnerships'
-    ]
-  },
-  {
-    name: 'Financial Services and Investment Banking (SI)',
-    units: [
-      'FSI Sales',
-      'FSI Technology Solutions'
-    ]
-  },
-  {
-    name: 'Enterprise Sales (Non-Banking) (SI)',
-    units: [
-      'ENT Sales',
-      'ENT Technology Solutions'
-    ]
-  },
-  {
-    name: 'Technology Solutions and ICT Products',
-    units: []
-  },
   {
     name: 'Customer Success and Service Delivery Management',
     units: [
@@ -46,7 +15,83 @@ export const DEPARTMENT_DETAILS: DepartmentItem[] = [
       'Managed Services Monitoring and Operations – SOC Engineering',
       'Managed Services Monitoring and Operations – Managed NOC',
       'Nexusguard'
-    ]
+    ],
+    description: 'Customer Excellence, SDM, Managed NOC/SOC/Systems, Nexusguard'
+  },
+  {
+    name: 'Enterprise Sales (Non-Banking) (SI)',
+    units: [
+      'ENT Sales',
+      'ENT Technology Solutions'
+    ],
+    description: 'ENT Sales, ENT Technology Solutions'
+  },
+  {
+    name: 'Financial Services and Investment Banking (SI)',
+    units: [
+      'FSI Sales',
+      'FSI Technology Solutions'
+    ],
+    description: 'FSI Sales, FSI Technology Solutions'
+  },
+  {
+    name: 'Governance, Risk, Compliance and Information Security',
+    units: [
+      'GRC',
+      'GRC Information Security'
+    ],
+    description: 'GRC, GRC Information Security'
+  },
+  {
+    name: 'Information and Communications Technology',
+    units: [
+      'IT Security Operations',
+      'Network Engineering',
+      'Network Operations'
+    ],
+    description: 'IT Security Operations, Network Engineering, Network Operations'
+  },
+  {
+    name: 'Management',
+    units: [
+      'General Management Unit'
+    ],
+    description: 'General Management Unit'
+  },
+  {
+    name: 'Marketing',
+    units: [
+      'General Marketing Unit'
+    ],
+    description: 'General Marketing Unit'
+  },
+  {
+    name: 'Operations',
+    units: [
+      'Operations Excellence',
+      'Sales Excellence',
+      'Billing & Collection'
+    ],
+    description: 'Operations Excellence, Sales Excellence, Billing & Collection'
+  },
+  {
+    name: 'Organizational Capability and Design',
+    units: [
+      'OCD',
+      'TIM Sales Acceleration Program (TSAP)'
+    ],
+    description: 'OCD, TIM Sales Acceleration Program (TSAP)'
+  },
+  {
+    name: 'Project Management Office',
+    units: [
+      'Project Management Office',
+      'Program Management',
+      'Business and Systems Consultant Unit',
+      'PMO Operations',
+      'Mondelez'
+    ],
+    description: 'PMO, Program Management, Business & Systems Consultant, Mondelez'
   },
   {
     name: 'Technical Solutions Delivery',
@@ -58,68 +103,44 @@ export const DEPARTMENT_DETAILS: DepartmentItem[] = [
       'TSD – SI Network Security',
       'TSD – SI Systems',
       'TSD – SI Tools & Apps'
-    ]
+    ],
+    description: 'Cloud Ops, Cloud Engineering, Security, Red Team, SI Systems'
   },
   {
-    name: 'Operations',
+    name: 'Technology Solutions and ICT Products',
     units: [
-      'Operations Excellence',
-      'Sales Excellence',
-      'Billing & Collection'
-    ]
+      'Technology Solutions',
+      'ICT Products & Engineering'
+    ],
+    description: 'Technology Solutions, ICT Products & Engineering'
   },
   {
-    name: 'Project Management Office',
+    name: 'Value Added Services',
     units: [
-      'Project Management Office',
-      'Program Management',
-      'Business and Systems Consultant Unit',
-      'PMO Operations',
-      'Mondelez'
-    ]
-  },
-  {
-    name: 'Marketing',
-    units: []
-  },
-  {
-    name: 'Governance, Risk, Compliance and Information Security',
-    units: [
-      'GRC',
-      'GRC Information Security'
-    ]
-  },
-  {
-    name: 'Information and Communications Technology',
-    units: [
-      'IT Security Operations',
-      'Network Engineering',
-      'Network Operations'
-    ]
-  },
-  {
-    name: 'Organizational Capability and Design',
-    units: [
-      'OCD',
-      'TIM Sales Acceleration Program (TSAP)'
-    ]
+      'VAS Sales',
+      'VAS Technology Solutions',
+      'VAS Products and Innovation',
+      'VAS Operations',
+      'VAS Channel & Partnerships'
+    ],
+    description: 'VAS Sales, Tech, Products & Innovation, Operations, Partnerships'
   }
 ];
 
 export const DEPARTMENTS = [
-  'Management',
-  'Value Added Services',
-  'Financial Services and Investment Banking (SI)',
-  'Enterprise Sales (Non-Banking) (SI)',
-  'Technology Solutions and ICT Products',
   'Customer Success and Service Delivery Management',
-  'Technical Solutions Delivery',
-  'Operations',
-  'Project Management Office',
-  'Marketing',
+  'Enterprise Sales (Non-Banking) (SI)',
+  'Financial Services and Investment Banking (SI)',
   'Governance, Risk, Compliance and Information Security',
   'Information and Communications Technology',
-  'Organizational Capability and Design'
+  'Management',
+  'Marketing',
+  'Operations',
+  'Organizational Capability and Design',
+  'Project Management Office',
+  'Technical Solutions Delivery',
+  'Technology Solutions and ICT Products',
+  'Value Added Services'
 ] as const;
 
 export type Department = typeof DEPARTMENTS[number];

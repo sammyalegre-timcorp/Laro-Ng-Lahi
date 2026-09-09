@@ -10,7 +10,6 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attendeeCount = 0 }) => {
   const isAdmin = currentPath === '/admin';
   const isTshirt = currentPath === '/tshirt';
-  const isRegister = currentPath === '/' || (!isAdmin && !isTshirt);
 
   return (
     <header className="sticky top-3 z-40 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-3xl shadow-[0_10px_30px_rgba(0,56,168,0.06)] overflow-hidden print:hidden">
@@ -22,14 +21,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attende
       </div>
 
       <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-20 gap-2">
           {/* Brand Logo & Title */}
           <div
             onClick={() => onNavigate('/')}
-            className="flex items-center gap-3.5 cursor-pointer group select-none"
+            className="flex items-center gap-3 sm:gap-3.5 cursor-pointer group select-none shrink-0"
           >
             {/* Official Logo */}
-            <div className="w-13 h-13 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden bg-white shadow-sm border border-slate-100 p-0.5 shrink-0">
+            <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden bg-white shadow-sm border border-slate-100 p-0.5 shrink-0">
               <img
                 src="https://marketing.timcorp.net.ph/hubfs/Employee%20Appreciation%202026/laro%20ng%20lahi%20logo.png"
                 alt="Laro ng Lahi Official Logo"
@@ -50,7 +49,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attende
                 {isAdmin
                   ? 'Admin Management & Operations Portal'
                   : isTshirt
-                  ? 'Opisyal na Pagpili ng Sukat ng Jersey'
+                  ? 'Opisyal na Pagpili ng Sukat ng Jersey & T-Shirt'
                   : 'Corporate Inter-Departmental Sports • Palarong Pinoy'}
               </p>
             </div>
@@ -58,7 +57,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attende
 
           {/* Navigation Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* If on admin view, allow switching back or showing admin pill */}
             {isAdmin ? (
               <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-black">
                 <button
@@ -80,12 +78,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attende
                 onClick={() => onNavigate('/')}
                 className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer"
               >
-                <UserPlus className="w-3.5 h-3.5 text-[#0038A8]" />
-                <span>Bumalik sa Rehistro</span>
+                <span>← Bumalik sa Registration</span>
               </button>
             ) : (
-              /* Normal registration view - Event schedule chip */
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 shadow-xs">
+              /* Main view: Event Schedule Chip */
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-slate-700 shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-[#0038A8] animate-pulse" />
                 <span>Oktubre 13, 2026 (8am - 5pm)</span>
                 <span className="text-slate-300">•</span>
@@ -98,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, attende
               <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 text-xs font-bold">
                 <span className="w-2 h-2 rounded-full bg-[#00A86B] animate-pulse" />
                 <Users className="w-3.5 h-3.5 text-[#0038A8]" />
-                <span>{attendeeCount} Registered</span>
+                <span>{attendeeCount} Rehistrado</span>
               </div>
             )}
           </div>
