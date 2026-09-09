@@ -62,6 +62,18 @@ export function findDuplicateRegistration(
 }
 
 export async function submitRegistration(data: Omit<Registration, 'id' | 'createdAt'>): Promise<string> {
+  // Strict email requirement: email cannot be empty as it serves as login credentials for T-shirt portal
+  const normalizedCandidateEmail = (data.email || '').trim().toLowerCase();
+  if (
+    !normalizedCandidateEmail ||
+    normalizedCandidateEmail === 'undefined' ||
+    normalizedCandidateEmail === 'null'
+  ) {
+    throw new Error(
+      'Kailangan po ang opisyal na email address (@timcorp.net.ph). Ito ang magiging log-in credentials ninyo para sa pagpili ng Sukat ng T-Shirt.'
+    );
+  }
+
   // Query all current registrations to strictly enforce uniqueness directly in Firestore
   const snap = await getDocs(collection(db, REGISTRATIONS_COLLECTION));
   const existingList: Registration[] = snap.docs.map((docSnap) => {
@@ -84,12 +96,12 @@ export async function submitRegistration(data: Omit<Registration, 'id' | 'create
 
   const dupCheck = findDuplicateRegistration(existingList, {
     fullName: data.fullName,
-    email: data.email
+    email: normalizedCandidateEmail
   });
 
   if (dupCheck.isDuplicate && dupCheck.existing) {
     const reason = dupCheck.matchedField === 'email'
-      ? `ang email na "${data.email}"`
+      ? `ang email na "${normalizedCandidateEmail}"`
       : `ang pangalang "${data.fullName}"`;
     throw new Error(
       `Bawal ang duplicate registration: Naka-rehistro na po ${reason} para kay ${dupCheck.existing.fullName} (${dupCheck.existing.department || 'TIM Corp'}). Bawat kalahok ay mayroon lamang isang (1) opisyal na rehistrasyon.`
@@ -98,6 +110,7 @@ export async function submitRegistration(data: Omit<Registration, 'id' | 'create
 
   const docRef = await addDoc(collection(db, REGISTRATIONS_COLLECTION), {
     ...data,
+    email: normalizedCandidateEmail,
     createdAt: new Date().toISOString(),
     status: data.status || 'confirmed'
   });
@@ -151,6 +164,13 @@ export function subscribeToRegistrations(
 }
 
 export async function updateRegistration(id: string, updates: Partial<Registration>): Promise<void> {
+  if (updates.email !== undefined) {
+    const norm = (updates.email || '').trim().toLowerCase();
+    if (!norm || norm === 'undefined' || norm === 'null') {
+      throw new Error('Kailangan po ang opisyal na email address (@timcorp.net.ph). Hindi maaaring blanko ang email.');
+    }
+    updates.email = norm;
+  }
   const docRef = doc(db, REGISTRATIONS_COLLECTION, id);
   await updateDoc(docRef, updates);
 }

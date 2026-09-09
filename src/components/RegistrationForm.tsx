@@ -83,10 +83,10 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
       return;
     }
 
-    // Email validation - must be timcorp.net.ph domain
+    // Email validation - mandatory for T-shirt portal credentials
     const emailRaw = formData.email.trim().toLowerCase();
-    if (!emailRaw) {
-      setErrorMessage('Paki-lagay ang inyong opisyal na TIM Corp email address (@timcorp.net.ph).');
+    if (!emailRaw || emailRaw === 'undefined' || emailRaw === 'null') {
+      setErrorMessage('Paki-lagay ang inyong opisyal na TIM Corp email address (@timcorp.net.ph). Ito ang inyong magiging log-in credentials sa Sukat ng T-Shirt portal.');
       return;
     }
 
@@ -382,7 +382,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               ) : (
                 <p className="text-[11px] text-slate-500 mt-1.5 font-medium flex items-center gap-1.5">
                   <Info className="w-3.5 h-3.5 text-[#0038A8] shrink-0" />
-                  <span>Kailangan ay opisyal na TIM Corp email address ang gamitin para sa rehistrasyon.</span>
+                  <span>Kailangan ay opisyal na TIM Corp email address. Ito ang inyong magiging <strong>log-in credentials</strong> sa pagpili ng inyong sukat sa T-Shirt at Jersey portal.</span>
                 </p>
               )}
             </div>

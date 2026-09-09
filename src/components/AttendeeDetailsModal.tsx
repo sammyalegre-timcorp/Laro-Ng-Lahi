@@ -47,15 +47,18 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
       const finalDepartment = formData.department.trim();
 
       let finalEmail = formData.email?.trim().toLowerCase() || '';
-      if (finalEmail) {
-        if (!finalEmail.includes('@')) {
-          finalEmail = `${finalEmail}@timcorp.net.ph`;
-        }
-        if (!finalEmail.endsWith('@timcorp.net.ph')) {
-          alert('Kailangan ay may domain na @timcorp.net.ph ang email address.');
-          setIsSaving(false);
-          return;
-        }
+      if (!finalEmail || finalEmail === 'undefined' || finalEmail === 'null') {
+        alert('Kailangan po ang opisyal na email address (@timcorp.net.ph) dahil ito ang gagamiting login credentials sa Sukat ng T-Shirt portal. Bawal ang blankong email.');
+        setIsSaving(false);
+        return;
+      }
+      if (!finalEmail.includes('@')) {
+        finalEmail = `${finalEmail}@timcorp.net.ph`;
+      }
+      if (!finalEmail.endsWith('@timcorp.net.ph')) {
+        alert('Kailangan ay may domain na @timcorp.net.ph ang email address.');
+        setIsSaving(false);
+        return;
       }
 
       // Check if update would create duplicate with another attendee
@@ -162,13 +165,17 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">
-                    Employee Email (@timcorp.net.ph)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500">
+                      Employee Email (@timcorp.net.ph) <span className="text-red-500">*</span>
+                    </label>
+                    <span className="text-[10px] font-bold text-[#0038A8]">Kailangan para sa T-Shirt Portal</span>
+                  </div>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="text"
+                      required
                       value={formData.email || ''}
                       onChange={e => setFormData({ ...formData, email: e.target.value })}
                       placeholder="pangalan@timcorp.net.ph"
