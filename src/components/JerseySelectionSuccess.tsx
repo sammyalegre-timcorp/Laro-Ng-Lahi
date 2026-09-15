@@ -166,10 +166,19 @@ export const JerseySelectionSuccess: React.FC<JerseySelectionSuccessProps> = ({
               </span>
               {assignedTeamObj && teamBadgeStyle ? (
                 <span
-                  className="inline-block px-3 py-1 rounded-xl text-xs font-black border"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black border"
                   style={teamBadgeStyle}
                 >
-                  {assignedTeamObj.name}
+                  {assignedTeamObj.logoUrl ? (
+                    <img
+                      src={assignedTeamObj.logoUrl}
+                      alt=""
+                      className="w-4 h-4 object-contain rounded-full shrink-0"
+                    />
+                  ) : (
+                    <span>{assignedTeamObj.iconName || '🏆'}</span>
+                  )}
+                  <span>{assignedTeamObj.name}</span>
                 </span>
               ) : (
                 <span className="text-xs font-bold text-[#0038A8]">

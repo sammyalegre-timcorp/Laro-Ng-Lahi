@@ -262,7 +262,13 @@ export const TeamBalancerModal: React.FC<TeamBalancerModalProps> = ({
                   className="p-3.5 text-white text-center relative"
                   style={{ backgroundColor: team.color }}
                 >
-                  <span className="text-2xl block mb-0.5">{team.iconName}</span>
+                  {team.logoUrl ? (
+                    <div className="w-10 h-10 mx-auto mb-1 bg-white/20 p-1 rounded-xl flex items-center justify-center shadow-xs">
+                      <img src={team.logoUrl} alt={team.name} className="w-full h-full object-contain rounded-lg" />
+                    </div>
+                  ) : (
+                    <span className="text-2xl block mb-0.5">{team.iconName}</span>
+                  )}
                   <h4 className="text-sm font-black tracking-tight leading-tight">{team.name}</h4>
                   <p className="text-[10px] text-white/90 italic truncate mt-0.5">{team.tagline}</p>
                 </div>

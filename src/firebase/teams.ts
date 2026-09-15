@@ -36,7 +36,8 @@ export function subscribeToTeams(
           bgBadge: d.bgBadge || 'bg-blue-100',
           borderBadge: d.borderBadge || 'border-blue-300',
           textBadge: d.textBadge || 'text-blue-800',
-          iconName: d.iconName || '🏆'
+          iconName: d.iconName || '🏆',
+          logoUrl: d.logoUrl || ''
         };
       });
 

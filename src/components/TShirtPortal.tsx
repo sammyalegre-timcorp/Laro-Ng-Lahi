@@ -443,10 +443,19 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
                 )}
                 {assignedTeamObj && teamBadgeStyle && (
                   <span
-                    className="px-2.5 py-0.5 rounded-full text-xs font-extrabold border"
+                    className="px-2.5 py-0.5 rounded-full text-xs font-extrabold border inline-flex items-center gap-1.5"
                     style={teamBadgeStyle}
                   >
-                    {assignedTeamObj.name}
+                    {assignedTeamObj.logoUrl ? (
+                      <img
+                        src={assignedTeamObj.logoUrl}
+                        alt=""
+                        className="w-3.5 h-3.5 object-contain rounded-full shrink-0"
+                      />
+                    ) : (
+                      <span>{assignedTeamObj.iconName || '🏆'}</span>
+                    )}
+                    <span>{assignedTeamObj.name}</span>
                   </span>
                 )}
               </div>

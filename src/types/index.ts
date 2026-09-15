@@ -241,6 +241,7 @@ export interface Team {
   borderBadge: string;
   textBadge: string;
   iconName: string;
+  logoUrl?: string;
 }
 
 export const FILIPINO_GAMES = [

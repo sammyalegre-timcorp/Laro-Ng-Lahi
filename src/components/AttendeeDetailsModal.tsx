@@ -325,9 +325,31 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
 
                 <div className="text-right">
                   <span className="text-[10px] text-slate-400 block uppercase font-black tracking-widest">Koponan</span>
-                  <span className="text-xs font-black text-[#0038A8] bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs inline-block mt-1">
-                    {attendee.assignedTeam || 'Walang Team'}
-                  </span>
+                  {(() => {
+                    const assignedTeamObj = teams.find(t => t.name === attendee.assignedTeam);
+                    const badgeStyle = assignedTeamObj ? getTeamBadgeStyle(assignedTeamObj.color) : undefined;
+                    return assignedTeamObj && badgeStyle ? (
+                      <span
+                        className="text-xs font-black px-3 py-1.5 rounded-xl border shadow-xs inline-flex items-center gap-1.5 mt-1"
+                        style={badgeStyle}
+                      >
+                        {assignedTeamObj.logoUrl ? (
+                          <img
+                            src={assignedTeamObj.logoUrl}
+                            alt=""
+                            className="w-3.5 h-3.5 object-contain rounded-full shrink-0"
+                          />
+                        ) : (
+                          <span>{assignedTeamObj.iconName || '🏆'}</span>
+                        )}
+                        <span>{assignedTeamObj.name}</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs font-black text-[#0038A8] bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs inline-block mt-1">
+                        {attendee.assignedTeam || 'Walang Team'}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
 
