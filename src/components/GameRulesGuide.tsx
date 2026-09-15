@@ -16,9 +16,11 @@ import {
   Info,
   Filter,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  LayoutGrid
 } from 'lucide-react';
 import { GameMasterAssignment } from '../types';
+import { InteractiveFloorPlan } from './InteractiveFloorPlan';
 import {
   subscribeToGameMasters,
   addGameMasterEntry,
@@ -75,6 +77,7 @@ export const GameRulesGuide: React.FC = () => {
   // Status message state
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'schedule' | 'floorplan'>('schedule');
 
   // Filter state
   const [filterCourt, setFilterCourt] = useState<string>('all');
@@ -424,14 +427,40 @@ export const GameRulesGuide: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 print:hidden">
+          <div className="flex items-center gap-2 print:hidden flex-wrap">
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setViewMode('schedule')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                  viewMode === 'schedule'
+                    ? 'bg-[#0038A8] text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                📋 Talaan (Table)
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('floorplan')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                  viewMode === 'floorplan'
+                    ? 'bg-[#0038A8] text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>Live Floor Plan</span>
+              </button>
+            </div>
+
             <button
               onClick={() => window.print()}
               disabled={entries.length === 0}
-              className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-wider shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-wider shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Printer className="w-4 h-4" />
-              <span>I-print ang Schedule</span>
+              <span>I-print</span>
             </button>
           </div>
         </div>
@@ -470,8 +499,18 @@ export const GameRulesGuide: React.FC = () => {
           </div>
         )}
 
-        {/* Input Form for New Game, Game Master, Court, and Time */}
-        <div className="pt-6 print:hidden">
+        {/* View Mode: Floor Plan vs Table */}
+        {viewMode === 'floorplan' ? (
+          <div className="pt-4">
+            <InteractiveFloorPlan
+              initialMinutes={810}
+              onNavigateToSchedule={() => setViewMode('schedule')}
+            />
+          </div>
+        ) : (
+          <>
+            {/* Input Form for New Game, Game Master, Court, and Time */}
+            <div className="pt-6 print:hidden">
           <form onSubmit={handleAdd} className="bg-slate-50 p-5 sm:p-6 rounded-2xl border-2 border-slate-100 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black uppercase tracking-widest text-[#0038A8] flex items-center gap-1.5">
@@ -882,7 +921,9 @@ export const GameRulesGuide: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
-    </div>
-  );
+      </>
+    )}
+  </div>
+</div>
+);
 };

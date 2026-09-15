@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, MapPin, Navigation, ExternalLink, Car, Bus, Info, Layers, Check, Crosshair } from 'lucide-react';
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Navigation,
+  ExternalLink,
+  Car,
+  Bus,
+  Info,
+  Layers,
+  Check,
+  Crosshair
+} from 'lucide-react';
 
 interface EventLocationMapProps {
   compact?: boolean;

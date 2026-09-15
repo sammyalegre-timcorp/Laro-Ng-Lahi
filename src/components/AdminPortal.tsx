@@ -22,7 +22,8 @@ import {
   Square,
   Palette,
   Mail,
-  Shirt
+  Shirt,
+  LayoutGrid
 } from 'lucide-react';
 import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS } from '../types';
 import { exportToExcel, exportToCSV, getAgeBracket } from '../utils/exportData';
@@ -31,6 +32,7 @@ import { TeamBalancerModal } from './TeamBalancerModal';
 import { PrintableRosterModal } from './PrintableRosterModal';
 import { TeamManagementModal } from './TeamManagementModal';
 import { GameRulesGuide } from './GameRulesGuide';
+import { InteractiveFloorPlan } from './InteractiveFloorPlan';
 import { DuplicateResolverModal } from './DuplicateResolverModal';
 import {
   updateRegistration,
@@ -56,7 +58,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   error
 }) => {
   // Navigation & Modal States
-  const [activeTab, setActiveTab] = useState<'directory' | 'rules'>('directory');
+  const [activeTab, setActiveTab] = useState<'directory' | 'floorplan' | 'rules'>('directory');
   const [selectedAttendee, setSelectedAttendee] = useState<Registration | null>(null);
   const [isBalancerOpen, setIsBalancerOpen] = useState(false);
   const [isPrintableRosterOpen, setIsPrintableRosterOpen] = useState(false);
@@ -391,6 +393,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             <Printer className="w-4 h-4" />
             <span>Print Rosters</span>
           </button>
+
+          {/* Live Floor Plan Action Button */}
+          <button
+            onClick={() => setActiveTab('floorplan')}
+            className={`px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:scale-105 transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'floorplan'
+                ? 'bg-[#0038A8] text-white ring-2 ring-blue-400'
+                : 'bg-white text-[#0038A8] border-2 border-[#0038A8]/30 hover:border-[#0038A8]'
+            }`}
+            title="Tingnan ang Live Floor Plan at mga laro sa bawat court"
+          >
+            <LayoutGrid className="w-4 h-4 text-[#CE1126]" />
+            <span>Live Floor Plan</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+          </button>
         </div>
       </div>
 
@@ -553,6 +570,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         >
           <Users className="w-4 h-4" />
           <span>Real-Time Attendee Directory ({filteredAttendees.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('floorplan')}
+          className={`px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer ${
+            activeTab === 'floorplan'
+              ? 'bg-[#0038A8] text-white shadow-lg shadow-blue-900/20'
+              : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200'
+          }`}
+        >
+          <LayoutGrid className="w-4 h-4 text-[#FFCD00]" />
+          <span>Live Floor Plan & Courts</span>
+          <span className="px-1.5 py-0.5 rounded bg-[#FFCD00] text-[#0038A8] text-[9px] font-black uppercase">
+            Live Games
+          </span>
         </button>
 
         <button
@@ -1056,6 +1088,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
       {/* Rules Guide Tab */}
       {activeTab === 'rules' && <GameRulesGuide />}
+
+      {/* Interactive Floor Plan Tab in Admin */}
+      {activeTab === 'floorplan' && (
+        <InteractiveFloorPlan onNavigateToSchedule={() => setActiveTab('rules')} />
+      )}
 
       {/* Attendee Details Modal */}
       {selectedAttendee && (
