@@ -146,11 +146,30 @@ export const DEPARTMENTS = [
 export type Department = typeof DEPARTMENTS[number];
 
 /**
+ * Normalizes department names, automatically migrating any typo or legacy
+ * "Technical Solutions Deliver" to "Technical Solutions Delivery".
+ */
+export function normalizeDepartmentName(departmentName?: string | null): string {
+  if (!departmentName) return '';
+  const trimmed = departmentName.trim();
+  const lower = trimmed.toLowerCase();
+  if (
+    lower === 'technical solutions deliver' ||
+    lower === 'technical solutions deliver (si)' ||
+    lower === 'technical solution deliver' ||
+    lower === 'technical solution delivery'
+  ) {
+    return 'Technical Solutions Delivery';
+  }
+  return trimmed;
+}
+
+/**
  * Returns the unit descriptions for a department, with tolerant matching for legacy department names.
  */
 export function getDepartmentUnits(departmentName: string): string[] {
   if (!departmentName) return [];
-  const normalized = departmentName.trim().toLowerCase();
+  const normalized = normalizeDepartmentName(departmentName).trim().toLowerCase();
   const match = DEPARTMENT_DETAILS.find(d => {
     const dName = d.name.toLowerCase();
     if (dName === normalized) return true;

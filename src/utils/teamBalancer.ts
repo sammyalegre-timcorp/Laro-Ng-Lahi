@@ -1,4 +1,4 @@
-import { Registration, Team } from '../types';
+import { Registration, Team, normalizeDepartmentName } from '../types';
 
 export type AgeTier = 'young' | 'mid' | 'older';
 
@@ -87,7 +87,7 @@ export function balanceTeams(
       const tier = getAgeTier(person.age);
       const isMale = person.gender === 'Male';
       const isFemale = person.gender === 'Female';
-      const deptKey = person.department || 'Other';
+      const deptKey = normalizeDepartmentName(person.department) || 'Other';
 
       // Pick the optimal team for this participant
       const sortedTeams = [...teamStats].sort((t1, t2) => {
@@ -174,7 +174,7 @@ export function computeTeamStats(
 
     const departmentCount: Record<string, number> = {};
     members.forEach(m => {
-      const dept = m.department || 'Other';
+      const dept = normalizeDepartmentName(m.department) || 'Other';
       departmentCount[dept] = (departmentCount[dept] || 0) + 1;
     });
 

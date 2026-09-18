@@ -12,7 +12,7 @@ import {
   User,
   ArrowRight
 } from 'lucide-react';
-import { Registration } from '../types';
+import { Registration, normalizeDepartmentName } from '../types';
 import { deleteRegistration, batchDeleteRegistrations } from '../firebase/registrations';
 
 interface DuplicateResolverModalProps {
@@ -285,7 +285,7 @@ export const DuplicateResolverModal: React.FC<DuplicateResolverModalProps> = ({
                             <div className="flex items-center gap-3 text-[11px] text-slate-500">
                               <span>Edad: <strong className="text-slate-700">{item.age}</strong></span>
                               <span>Kasarian: <strong className="text-slate-700">{item.gender}</strong></span>
-                              <span>Dept: <strong className="text-slate-700">{item.department}</strong></span>
+                              <span>Dept: <strong className="text-slate-700">{normalizeDepartmentName(item.department)}</strong></span>
                             </div>
                             {item.assignedTeam && (
                               <div className="text-[11px] font-bold text-purple-700">

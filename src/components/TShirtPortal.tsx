@@ -24,7 +24,8 @@ import {
   MENS_SHIRT_SIZES,
   WOMENS_SHIRT_SIZES,
   ALL_SHIRT_SIZES,
-  ShirtMeasurement
+  ShirtMeasurement,
+  normalizeDepartmentName
 } from '../types';
 import { saveAttendeeTShirtSize, normalizeEmail } from '../firebase/registrations';
 import { getTeamByName, getTeamBadgeStyle } from '../utils/teamUtils';
@@ -460,7 +461,7 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
                 )}
               </div>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
-                {currentAttendee.department} • <span className="text-slate-700">{currentAttendee.email}</span>
+                {normalizeDepartmentName(currentAttendee.department)} • <span className="text-slate-700">{currentAttendee.email}</span>
               </p>
             </div>
           </div>

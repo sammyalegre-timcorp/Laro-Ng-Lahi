@@ -11,7 +11,7 @@ import {
   getDocs
 } from 'firebase/firestore';
 import { db } from './config';
-import { Registration } from '../types';
+import { Registration, normalizeDepartmentName } from '../types';
 
 const REGISTRATIONS_COLLECTION = 'registrations';
 
@@ -110,6 +110,7 @@ export async function submitRegistration(data: Omit<Registration, 'id' | 'create
 
   const docRef = await addDoc(collection(db, REGISTRATIONS_COLLECTION), {
     ...data,
+    department: normalizeDepartmentName(data.department),
     email: normalizedCandidateEmail,
     createdAt: new Date().toISOString(),
     status: data.status || 'confirmed'
@@ -131,13 +132,25 @@ export function subscribeToRegistrations(
     (snapshot) => {
       const items: Registration[] = snapshot.docs.map((docSnap) => {
         const d = docSnap.data();
+        const rawDept = d.department || '';
+        const cleanDept = normalizeDepartmentName(rawDept);
+
+        // Auto-heal in Firestore if an attendee document still has "Technical Solutions Deliver"
+        if (rawDept !== cleanDept && cleanDept === 'Technical Solutions Delivery') {
+          updateDoc(doc(db, REGISTRATIONS_COLLECTION, docSnap.id), {
+            department: 'Technical Solutions Delivery'
+          }).catch((err) => {
+            console.warn(`Auto-repairing department for ${d.fullName || docSnap.id}:`, err);
+          });
+        }
+
         return {
           id: docSnap.id,
           fullName: d.fullName || '',
           nickname: d.nickname || '',
           age: Number(d.age) || 0,
           gender: d.gender || 'Male',
-          department: d.department || '',
+          department: cleanDept,
           customDepartment: d.customDepartment || '',
           employeeId: d.employeeId || '',
           email: d.email || '',
@@ -171,8 +184,41 @@ export async function updateRegistration(id: string, updates: Partial<Registrati
     }
     updates.email = norm;
   }
+  if (updates.department !== undefined) {
+    updates.department = normalizeDepartmentName(updates.department);
+  }
   const docRef = doc(db, REGISTRATIONS_COLLECTION, id);
   await updateDoc(docRef, updates);
+}
+
+/**
+ * Explicit migration helper: Scans all registrations and updates any attendee
+ * listed under "Technical Solutions Deliver" to "Technical Solutions Delivery".
+ */
+export async function migrateTechnicalSolutionsDeliver(): Promise<{ updatedCount: number; updatedNames: string[] }> {
+  const snap = await getDocs(collection(db, REGISTRATIONS_COLLECTION));
+  const batch = writeBatch(db);
+  let updatedCount = 0;
+  const updatedNames: string[] = [];
+
+  for (const docSnap of snap.docs) {
+    const d = docSnap.data();
+    const rawDept = d.department || '';
+    const cleanDept = normalizeDepartmentName(rawDept);
+    if (rawDept !== cleanDept && cleanDept === 'Technical Solutions Delivery') {
+      batch.update(doc(db, REGISTRATIONS_COLLECTION, docSnap.id), {
+        department: 'Technical Solutions Delivery'
+      });
+      updatedCount++;
+      updatedNames.push(d.fullName || docSnap.id);
+    }
+  }
+
+  if (updatedCount > 0) {
+    await batch.commit();
+  }
+
+  return { updatedCount, updatedNames };
 }
 
 export async function saveAttendeeTShirtSize(

@@ -11,7 +11,7 @@ import {
   AlertTriangle,
   Shirt
 } from 'lucide-react';
-import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS, DEPARTMENT_DETAILS, getDepartmentUnits, ALL_SHIRT_SIZES } from '../types';
+import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS, DEPARTMENT_DETAILS, getDepartmentUnits, ALL_SHIRT_SIZES, normalizeDepartmentName } from '../types';
 import { DepartmentDropdown } from './DepartmentDropdown';
 import { updateRegistration, deleteRegistration, findDuplicateRegistration } from '../firebase/registrations';
 import { getTeamBadgeStyle } from '../utils/teamUtils';
@@ -38,13 +38,16 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const [formData, setFormData] = useState<Registration>({ ...attendee });
+  const [formData, setFormData] = useState<Registration>({
+    ...attendee,
+    department: normalizeDepartmentName(attendee.department)
+  });
 
   const handleSave = async () => {
     if (!attendee.id) return;
     try {
       setIsSaving(true);
-      const finalDepartment = formData.department.trim();
+      const finalDepartment = normalizeDepartmentName(formData.department);
 
       let finalEmail = formData.email?.trim().toLowerCase() || '';
       if (!finalEmail || finalEmail === 'undefined' || finalEmail === 'null') {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Printer } from 'lucide-react';
-import { Registration, Team, DEFAULT_TEAMS } from '../types';
+import { Registration, Team, DEFAULT_TEAMS, normalizeDepartmentName } from '../types';
 
 interface PrintableRosterModalProps {
   registrations: Registration[];
@@ -157,7 +157,7 @@ export const PrintableRosterModal: React.FC<PrintableRosterModalProps> = ({
                           <td className="p-2 border-r border-slate-300 text-slate-700 font-semibold">{m.nickname || '-'}</td>
                           <td className="p-2 border-r border-slate-300 text-center font-bold">{m.age}</td>
                           <td className="p-2 border-r border-slate-300 text-center">{m.gender.slice(0, 1)}</td>
-                          <td className="p-2 border-r border-slate-300">{m.department}</td>
+                          <td className="p-2 border-r border-slate-300">{normalizeDepartmentName(m.department)}</td>
                           <td className="p-2 border-r border-slate-300 text-[11px] text-slate-600">{m.medicalNotes || '-'}</td>
                           <td className="p-2 border-slate-300 h-8"></td>
                         </tr>

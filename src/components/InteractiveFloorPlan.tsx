@@ -4,7 +4,6 @@ import {
   Play,
   Pause,
   RotateCcw,
-  Sparkles,
   MapPin,
   Calendar,
   Users,
@@ -150,7 +149,7 @@ export const InteractiveFloorPlan: React.FC<InteractiveFloorPlanProps> = ({
     { label: '9:30 AM', minutes: 570, desc: 'Morning Rounds' },
     { label: '10:30 AM', minutes: 630, desc: 'Pre-Lunch Clash' },
     { label: '12:00 PM', minutes: 720, desc: 'Lunch Break' },
-    { label: '1:30 PM', minutes: 810, desc: 'Afternoon Heat (Halimbawa)', isExample: true },
+    { label: '1:30 PM', minutes: 810, desc: 'Afternoon Heat' },
     { label: '2:30 PM', minutes: 870, desc: 'Semi-Finals' },
     { label: '4:00 PM', minutes: 960, desc: 'Championship' }
   ];
@@ -184,7 +183,7 @@ export const InteractiveFloorPlan: React.FC<InteractiveFloorPlanProps> = ({
                 <span>Iskedyul ng mga Laro sa Floor Plan</span>
               </h3>
               <p className="text-xs text-blue-100 font-medium">
-                Piliin ang oras (hal. 1:30 PM) upang makita kung aling mga laro ang kasalukuyang nagaganap sa bawat court.
+                Piliin o baguhin ang oras upang makita kung aling mga laro ang kasalukuyang nagaganap sa bawat court.
               </p>
             </div>
           </div>
@@ -239,19 +238,11 @@ export const InteractiveFloorPlan: React.FC<InteractiveFloorPlanProps> = ({
                   className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
                     isActive
                       ? 'bg-[#0038A8] text-white shadow-md shadow-blue-900/20 scale-105 ring-2 ring-blue-400/40'
-                      : preset.isExample
-                      ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300'
                       : 'bg-white hover:bg-slate-200 text-slate-700 border border-slate-200'
                   }`}
                   title={`${preset.desc} (${preset.label})`}
                 >
-                  {preset.isExample && <Sparkles className="w-3 h-3 text-amber-600" />}
                   <span>{preset.label}</span>
-                  {preset.isExample && (
-                    <span className="px-1 py-0.2 rounded bg-amber-500 text-white text-[9px] uppercase font-black">
-                      Halimbawa
-                    </span>
-                  )}
                 </button>
               );
             })}

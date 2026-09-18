@@ -16,7 +16,7 @@ import {
   Mail,
   AlertTriangle
 } from 'lucide-react';
-import { Registration, DEPARTMENTS, DEPARTMENT_DETAILS, getDepartmentUnits } from '../types';
+import { Registration, DEPARTMENTS, DEPARTMENT_DETAILS, getDepartmentUnits, normalizeDepartmentName } from '../types';
 import { DepartmentDropdown } from './DepartmentDropdown';
 import { submitRegistration, findDuplicateRegistration } from '../firebase/registrations';
 import { RegistrationCountdown, REGISTRATION_DEADLINE_MS } from './RegistrationCountdown';
@@ -138,7 +138,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
       return;
     }
 
-    const resolvedDepartment = formData.department.trim();
+    const resolvedDepartment = normalizeDepartmentName(formData.department);
 
     try {
       setLoading(true);

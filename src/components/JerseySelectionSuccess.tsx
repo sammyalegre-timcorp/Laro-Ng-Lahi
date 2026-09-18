@@ -17,7 +17,7 @@ import {
   Sparkles,
   X
 } from 'lucide-react';
-import { Registration, Team, ShirtMeasurement } from '../types';
+import { Registration, Team, ShirtMeasurement, normalizeDepartmentName } from '../types';
 
 interface JerseySelectionSuccessProps {
   attendee: Registration;
@@ -192,7 +192,7 @@ export const JerseySelectionSuccess: React.FC<JerseySelectionSuccessProps> = ({
                 Departamento / Unit
               </span>
               <span className="text-xs font-bold text-slate-800 block truncate">
-                {attendee.department}
+                {normalizeDepartmentName(attendee.department)}
               </span>
             </div>
           </div>

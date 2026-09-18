@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { Registration } from '../types';
+import { Registration, normalizeDepartmentName } from '../types';
 
 export function getAgeBracket(age: number): string {
   if (age < 25) return 'Under 25';
@@ -22,7 +22,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
     'Age': r.age,
     'Age Group': getAgeBracket(r.age),
     'Gender': r.gender,
-    'Department': r.department || 'Other',
+    'Department': normalizeDepartmentName(r.department) || 'Other',
     'Assigned Team': r.assignedTeam || 'Unassigned',
     'T-Shirt Fit': r.shirtGenderCut ? `${r.shirtGenderCut}'s Cut` : 'Pending',
     'T-Shirt Size': r.shirtSize || 'Pending',
@@ -87,7 +87,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
         'Email': m.email || '-',
         'Age': m.age,
         'Gender': m.gender,
-        'Department': m.department || '-',
+        'Department': normalizeDepartmentName(m.department) || '-',
         'T-Shirt Size': m.shirtSize ? `${m.shirtGenderCut || 'Men'}'s ${m.shirtSize}` : 'Pending',
         'Medical Notes': m.medicalNotes || '-'
       });
@@ -208,7 +208,7 @@ export function exportToCSV(registrations: Registration[], filename = 'Laro_ng_L
     r.age,
     escapeCSV(getAgeBracket(r.age)),
     escapeCSV(r.gender),
-    escapeCSV(r.department || ''),
+    escapeCSV(normalizeDepartmentName(r.department) || ''),
     escapeCSV(r.assignedTeam || 'Unassigned'),
     escapeCSV(r.shirtGenderCut ? `${r.shirtGenderCut}'s Cut` : 'Pending'),
     escapeCSV(r.shirtSize || 'Pending'),

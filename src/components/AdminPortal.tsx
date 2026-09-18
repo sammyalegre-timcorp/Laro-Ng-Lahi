@@ -25,7 +25,7 @@ import {
   Shirt,
   LayoutGrid
 } from 'lucide-react';
-import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS } from '../types';
+import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS, normalizeDepartmentName } from '../types';
 import { exportToExcel, exportToCSV, getAgeBracket } from '../utils/exportData';
 import { AttendeeDetailsModal } from './AttendeeDetailsModal';
 import { TeamBalancerModal } from './TeamBalancerModal';
@@ -39,7 +39,8 @@ import {
   deleteRegistration,
   batchDeleteRegistrations,
   normalizeAttendeeName,
-  normalizeEmail
+  normalizeEmail,
+  migrateTechnicalSolutionsDeliver
 } from '../firebase/registrations';
 import { getTeamBadgeStyle } from '../utils/teamUtils';
 
@@ -81,6 +82,18 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [sortBy, setSortBy] = useState<'date-desc' | 'date-asc' | 'name' | 'age-asc' | 'age-desc' | 'dept'>('date-desc');
   const [isDuplicateResolverOpen, setIsDuplicateResolverOpen] = useState(false);
   const [filterDuplicatesOnly, setFilterDuplicatesOnly] = useState(false);
+
+  // Auto-migrate any attendee registered under "Technical Solutions Deliver" to "Technical Solutions Delivery"
+  React.useEffect(() => {
+    migrateTechnicalSolutionsDeliver().then((res) => {
+      if (res.updatedCount > 0) {
+        setToastMessage(`Awtomatikong inilipat ang ${res.updatedCount} kalahok mula sa "Technical Solutions Deliver" patungong "Technical Solutions Delivery".`);
+        setTimeout(() => setToastMessage(null), 5000);
+      }
+    }).catch((err) => {
+      console.warn('Auto-migration error:', err);
+    });
+  }, []);
 
   // Group registrations by attendee (normalized full name OR normalized email)
   const duplicateGroups = useMemo(() => {
@@ -132,8 +145,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const availableDepartments = useMemo(() => {
     const depts = new Set<string>(DEPARTMENTS);
     registrations.forEach(r => {
-      if (r.department && r.department.trim()) {
-        depts.add(r.department.trim());
+      const clean = normalizeDepartmentName(r.department);
+      if (clean) {
+        depts.add(clean);
       }
     });
     return Array.from(depts).sort((a, b) => a.localeCompare(b));
@@ -205,7 +219,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         (r.shirtGenderCut && r.shirtGenderCut.toLowerCase().includes(search));
 
       // Department Filter
-      const matchesDept = selectedDepartment === 'all' || r.department?.toLowerCase() === selectedDepartment.toLowerCase();
+      const userDept = normalizeDepartmentName(r.department).toLowerCase();
+      const targetDept = normalizeDepartmentName(selectedDepartment).toLowerCase();
+      const matchesDept = selectedDepartment === 'all' || userDept === targetDept;
 
       // Age Bracket Filter
       const matchesAge = selectedAgeBracket === 'all' || getAgeBracket(r.age) === selectedAgeBracket;
@@ -227,7 +243,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       if (sortBy === 'name') return a.fullName.localeCompare(b.fullName);
       if (sortBy === 'age-asc') return a.age - b.age;
       if (sortBy === 'age-desc') return b.age - a.age;
-      if (sortBy === 'dept') return (a.department || '').localeCompare(b.department || '');
+      if (sortBy === 'dept') return normalizeDepartmentName(a.department).localeCompare(normalizeDepartmentName(b.department));
       if (sortBy === 'date-asc') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // date-desc
     });
@@ -868,7 +884,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         {/* Department */}
                         <td className="p-4">
                           <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-bold inline-block border border-slate-200">
-                            {attendee.department}
+                            {normalizeDepartmentName(attendee.department)}
                           </span>
                         </td>
 
