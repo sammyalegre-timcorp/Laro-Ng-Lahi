@@ -164,6 +164,154 @@ export function normalizeDepartmentName(departmentName?: string | null): string 
   return trimmed;
 }
 
+export const TWO_WORD_SURNAME_PREFIXES = [
+  'de la',
+  'de los',
+  'de las',
+  'san juan',
+  'san pedro',
+  'san jose',
+  'san miguel',
+  'san mateo',
+  'san antonio',
+  'sta. maria',
+  'sta maria',
+  'santa maria',
+  'sta. cruz',
+  'sta cruz',
+  'santa cruz',
+  'sta. ana',
+  'sta ana',
+  'santa ana',
+  'sta. teresa',
+  'santa teresa'
+];
+
+export const ONE_WORD_SURNAME_PREFIXES = [
+  'dela',
+  'delos',
+  'delas',
+  'del',
+  'de',
+  'di',
+  'da',
+  'du',
+  'van',
+  'von',
+  'san',
+  'sta.',
+  'sta',
+  'santa',
+  'santo'
+];
+
+export const GENERATIONAL_SUFFIXES = ['jr.', 'jr', 'sr.', 'sr', 'ii', 'iii', 'iv', 'v', 'vi'];
+
+/**
+ * Checks whether a name string is already formatted as "Surname, First Name".
+ */
+export function isSurnameFirst(name?: string | null): boolean {
+  if (!name) return false;
+  return name.includes(',');
+}
+
+/**
+ * Converts a name entered as "First name Surname" into official "Surname, First Name" format.
+ * If already formatted with a comma (e.g. "Dela Cruz, Juan"), normalizes spacing and returns it.
+ * Accurately handles Philippine compound surnames (e.g. Dela Cruz, De Los Santos, San Jose, Del Rosario)
+ * and generational suffixes (Jr., Sr., III, etc.).
+ */
+export function formatToSurnameFirst(fullName?: string | null): string {
+  if (!fullName) return '';
+  const trimmed = fullName.trim();
+  if (!trimmed) return '';
+
+  // If already in "Surname, First Name" format (contains comma)
+  if (trimmed.includes(',')) {
+    const parts = trimmed.split(',').map(s => s.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0]}, ${parts.slice(1).join(' ')}`;
+    }
+    return trimmed;
+  }
+
+  const rawWords = trimmed.split(/\s+/).filter(Boolean);
+  if (rawWords.length <= 1) {
+    return trimmed;
+  }
+
+  // Check for generational suffix at the end (e.g., Jr., III)
+  let suffix = '';
+  let words = rawWords;
+  const lastWordLower = rawWords[rawWords.length - 1].toLowerCase().replace(/[.,]/g, '');
+  if (
+    GENERATIONAL_SUFFIXES.includes(lastWordLower) ||
+    GENERATIONAL_SUFFIXES.includes(rawWords[rawWords.length - 1].toLowerCase())
+  ) {
+    if (rawWords.length >= 3) {
+      suffix = rawWords[rawWords.length - 1];
+      words = rawWords.slice(0, -1);
+    }
+  }
+
+  if (words.length <= 1) {
+    return trimmed;
+  }
+
+  if (words.length === 2) {
+    const firstName = words[0];
+    const surname = words[1];
+    return `${surname}, ${firstName}${suffix ? ' ' + suffix : ''}`;
+  }
+
+  // For 3+ words, search if there is a compound surname prefix
+  // Check two-word prefixes first (starting from index 1 up to words.length - 2)
+  let surnameStartIndex = -1;
+  for (let i = 1; i <= words.length - 2; i++) {
+    const twoWord = `${words[i].toLowerCase()} ${words[i + 1].toLowerCase()}`;
+    if (TWO_WORD_SURNAME_PREFIXES.includes(twoWord)) {
+      surnameStartIndex = i;
+      break;
+    }
+  }
+
+  // If no two-word prefix, check one-word prefixes (starting from index 1 up to words.length - 2)
+  if (surnameStartIndex === -1) {
+    for (let i = 1; i <= words.length - 2; i++) {
+      const oneWord = words[i].toLowerCase().replace(/\./g, '');
+      if (
+        ONE_WORD_SURNAME_PREFIXES.includes(oneWord) ||
+        ONE_WORD_SURNAME_PREFIXES.includes(words[i].toLowerCase())
+      ) {
+        surnameStartIndex = i;
+        break;
+      }
+    }
+  }
+
+  // If no prefix matched, assume standard: last word is the surname
+  if (surnameStartIndex === -1) {
+    surnameStartIndex = words.length - 1;
+  }
+
+  const firstName = words.slice(0, surnameStartIndex).join(' ');
+  const surname = words.slice(surnameStartIndex).join(' ');
+
+  return `${surname}, ${firstName}${suffix ? ' ' + suffix : ''}`;
+}
+
+/**
+ * Helper to get conversational "Firstname Surname" display if needed.
+ */
+export function formatToFirstnameFirst(name?: string | null): string {
+  if (!name) return '';
+  const trimmed = name.trim();
+  if (!trimmed.includes(',')) return trimmed;
+  const [surname, ...rest] = trimmed.split(',');
+  const firstName = rest.join(' ').trim();
+  return firstName ? `${firstName} ${surname.trim()}` : surname.trim();
+}
+
 /**
  * Returns the unit descriptions for a department, with tolerant matching for legacy department names.
  */

@@ -25,7 +25,7 @@ import {
   Shirt,
   LayoutGrid
 } from 'lucide-react';
-import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS, normalizeDepartmentName } from '../types';
+import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS, normalizeDepartmentName, formatToSurnameFirst } from '../types';
 import { exportToExcel, exportToCSV, getAgeBracket } from '../utils/exportData';
 import { AttendeeDetailsModal } from './AttendeeDetailsModal';
 import { TeamBalancerModal } from './TeamBalancerModal';
@@ -40,7 +40,8 @@ import {
   batchDeleteRegistrations,
   normalizeAttendeeName,
   normalizeEmail,
-  migrateTechnicalSolutionsDeliver
+  migrateTechnicalSolutionsDeliver,
+  migrateAllNamesToSurnameFirst
 } from '../firebase/registrations';
 import { getTeamBadgeStyle } from '../utils/teamUtils';
 
@@ -82,8 +83,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [sortBy, setSortBy] = useState<'date-desc' | 'date-asc' | 'name' | 'age-asc' | 'age-desc' | 'dept'>('date-desc');
   const [isDuplicateResolverOpen, setIsDuplicateResolverOpen] = useState(false);
   const [filterDuplicatesOnly, setFilterDuplicatesOnly] = useState(false);
+  const [isFormattingNames, setIsFormattingNames] = useState(false);
 
   // Auto-migrate any attendee registered under "Technical Solutions Deliver" to "Technical Solutions Delivery"
+  // and auto-normalize all existing names in Firestore to "Surname, First Name"
   React.useEffect(() => {
     migrateTechnicalSolutionsDeliver().then((res) => {
       if (res.updatedCount > 0) {
@@ -92,6 +95,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       }
     }).catch((err) => {
       console.warn('Auto-migration error:', err);
+    });
+
+    migrateAllNamesToSurnameFirst().then((res) => {
+      if (res.updatedCount > 0) {
+        setToastMessage(`Awtomatikong isinaayos ang ${res.updatedCount} pangalan sa database sa format na "Surname, First Name".`);
+        setTimeout(() => setToastMessage(null), 6000);
+      }
+    }).catch((err) => {
+      console.warn('Name formatting migration error:', err);
     });
   }, []);
 
@@ -208,8 +220,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     return registrations.filter(r => {
       // Search
       const search = searchTerm.toLowerCase().trim();
+      const formattedName = formatToSurnameFirst(r.fullName).toLowerCase();
       const matchesSearch = !search ||
         r.fullName.toLowerCase().includes(search) ||
+        formattedName.includes(search) ||
         (r.nickname && r.nickname.toLowerCase().includes(search)) ||
         (r.email && r.email.toLowerCase().includes(search)) ||
         (r.department && r.department.toLowerCase().includes(search)) ||
@@ -240,7 +254,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
       return matchesSearch && matchesDept && matchesAge && matchesGender && matchesTeam;
     }).sort((a, b) => {
-      if (sortBy === 'name') return a.fullName.localeCompare(b.fullName);
+      if (sortBy === 'name') return formatToSurnameFirst(a.fullName).localeCompare(formatToSurnameFirst(b.fullName));
       if (sortBy === 'age-asc') return a.age - b.age;
       if (sortBy === 'age-desc') return b.age - a.age;
       if (sortBy === 'dept') return normalizeDepartmentName(a.department).localeCompare(normalizeDepartmentName(b.department));
@@ -262,6 +276,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       await updateRegistration(id, { assignedTeam: teamName || null });
     } catch (err) {
       console.error('Failed to quick assign team:', err);
+    }
+  };
+
+  const handleManualFormatNames = async () => {
+    try {
+      setIsFormattingNames(true);
+      const res = await migrateAllNamesToSurnameFirst();
+      if (res.updatedCount > 0) {
+        showToast(`Tagumpay! Isinaayos ang ${res.updatedCount} pangalan sa database sa format na "Surname, First Name".`);
+      } else {
+        showToast('Lahat ng pangalan sa database ay naka-format na bilang "Surname, First Name".');
+      }
+    } catch (err) {
+      console.error('Failed to sync names:', err);
+      showToast('Nagkaroon ng problema sa name formatting sync. Pakisubukang muli.');
+    } finally {
+      setIsFormattingNames(false);
     }
   };
 
@@ -423,6 +454,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             <LayoutGrid className="w-4 h-4 text-[#CE1126]" />
             <span>Live Floor Plan</span>
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+          </button>
+
+          {/* Format All Names to Surname First Sync Button */}
+          <button
+            onClick={handleManualFormatNames}
+            disabled={isFormattingNames || registrations.length === 0}
+            className="px-4 py-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#0038A8] border border-blue-200 text-xs font-black uppercase tracking-wider shadow-xs hover:shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            title="I-format ang lahat ng pangalan sa database bilang 'Surname, First Name'"
+          >
+            <Sparkles className={`w-4 h-4 text-[#0038A8] ${isFormattingNames ? 'animate-spin' : ''}`} />
+            <span>{isFormattingNames ? 'Inaayos...' : 'Surname First Sync'}</span>
           </button>
         </div>
       </div>
@@ -656,7 +698,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   >
                     <option value="date-desc">Pinakabago (Newest)</option>
                     <option value="date-asc">Pinakauna (Oldest)</option>
-                    <option value="name">Pangalan (A-Z)</option>
+                    <option value="name">Apelyido / Surname (A-Z)</option>
                     <option value="age-asc">Edad: Pataas (Youngest)</option>
                     <option value="age-desc">Edad: Pababa (Oldest)</option>
                     <option value="dept">Departamento</option>
@@ -836,8 +878,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         {/* Name & Nickname & Email */}
                         <td className="p-4">
                           <div className="flex items-center gap-2">
-                            <span className="font-black text-slate-900 text-sm">
-                              {attendee.fullName}
+                            <span className="font-black text-slate-900 text-sm hover:text-[#0038A8] transition-colors">
+                              {formatToSurnameFirst(attendee.fullName)}
                             </span>
                             {attendee.id && duplicateAttendeeIds.has(attendee.id) && (
                               <button
@@ -1015,7 +1057,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
               <div className="p-4 rounded-2xl bg-red-50/70 border border-red-200 space-y-1.5 text-xs">
                 <div className="font-black text-slate-900 text-sm">
-                  {attendeeToDelete.fullName}
+                  {formatToSurnameFirst(attendeeToDelete.fullName)}
                   {attendeeToDelete.nickname ? ` ("${attendeeToDelete.nickname}")` : ''}
                 </div>
                 <div className="flex items-center gap-2 text-slate-600">

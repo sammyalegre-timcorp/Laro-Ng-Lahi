@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Printer } from 'lucide-react';
-import { Registration, Team, DEFAULT_TEAMS, normalizeDepartmentName } from '../types';
+import { Registration, Team, DEFAULT_TEAMS, normalizeDepartmentName, formatToSurnameFirst } from '../types';
 
 interface PrintableRosterModalProps {
   registrations: Registration[];
@@ -147,11 +147,11 @@ export const PrintableRosterModal: React.FC<PrintableRosterModalProps> = ({
                       </tr>
                     </thead>
                     <tbody>
-                      {members.map((m, idx) => (
+                      {[...members].sort((a, b) => formatToSurnameFirst(a.fullName).localeCompare(formatToSurnameFirst(b.fullName))).map((m, idx) => (
                         <tr key={m.id || idx} className="border-b border-slate-300 hover:bg-slate-50">
                           <td className="p-2 border-r border-slate-300 text-center font-mono">{idx + 1}</td>
                           <td className="p-2 border-r border-slate-300">
-                            <div className="font-bold text-slate-900">{m.fullName}</div>
+                            <div className="font-bold text-slate-900">{formatToSurnameFirst(m.fullName)}</div>
                             {m.email && <div className="text-[10px] text-slate-500 font-mono">{m.email}</div>}
                           </td>
                           <td className="p-2 border-r border-slate-300 text-slate-700 font-semibold">{m.nickname || '-'}</td>

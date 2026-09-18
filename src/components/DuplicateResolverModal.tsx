@@ -12,7 +12,7 @@ import {
   User,
   ArrowRight
 } from 'lucide-react';
-import { Registration, normalizeDepartmentName } from '../types';
+import { Registration, normalizeDepartmentName, formatToSurnameFirst } from '../types';
 import { deleteRegistration, batchDeleteRegistrations } from '../firebase/registrations';
 
 interface DuplicateResolverModalProps {
@@ -192,7 +192,7 @@ export const DuplicateResolverModal: React.FC<DuplicateResolverModalProps> = ({
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-[#0038A8]" />
                       <h3 className="font-black text-slate-900 text-sm sm:text-base">
-                        {primaryName}
+                        {formatToSurnameFirst(primaryName)}
                       </h3>
                       <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-[#CE1126]/10 text-[#CE1126]">
                         {group.length} rehistrasyon
@@ -273,6 +273,9 @@ export const DuplicateResolverModal: React.FC<DuplicateResolverModalProps> = ({
                           </div>
 
                           <div className="space-y-1 text-xs text-slate-600">
+                            <div className="font-black text-slate-900 text-xs">
+                              {formatToSurnameFirst(item.fullName)}
+                            </div>
                             <div>
                               Palayaw: <strong className="text-slate-900 font-bold">{item.nickname || '-'}</strong>
                             </div>

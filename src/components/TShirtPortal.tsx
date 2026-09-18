@@ -25,7 +25,8 @@ import {
   WOMENS_SHIRT_SIZES,
   ALL_SHIRT_SIZES,
   ShirtMeasurement,
-  normalizeDepartmentName
+  normalizeDepartmentName,
+  formatToSurnameFirst
 } from '../types';
 import { saveAttendeeTShirtSize, normalizeEmail } from '../firebase/registrations';
 import { getTeamByName, getTeamBadgeStyle } from '../utils/teamUtils';
@@ -435,7 +436,7 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                  {currentAttendee.fullName}
+                  {formatToSurnameFirst(currentAttendee.fullName)}
                 </h2>
                 {currentAttendee.nickname && (
                   <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-[#0038A8] text-xs font-bold">

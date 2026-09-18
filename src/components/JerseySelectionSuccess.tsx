@@ -17,7 +17,7 @@ import {
   Sparkles,
   X
 } from 'lucide-react';
-import { Registration, Team, ShirtMeasurement, normalizeDepartmentName } from '../types';
+import { Registration, Team, ShirtMeasurement, normalizeDepartmentName, formatToSurnameFirst } from '../types';
 
 interface JerseySelectionSuccessProps {
   attendee: Registration;
@@ -129,7 +129,7 @@ export const JerseySelectionSuccess: React.FC<JerseySelectionSuccessProps> = ({
                 Kalahok (Participant)
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight">
-                {attendee.fullName}
+                {formatToSurnameFirst(attendee.fullName)}
               </h2>
               {attendee.nickname && (
                 <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">

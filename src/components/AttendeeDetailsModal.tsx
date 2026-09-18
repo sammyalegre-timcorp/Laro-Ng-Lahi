@@ -11,7 +11,7 @@ import {
   AlertTriangle,
   Shirt
 } from 'lucide-react';
-import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS, DEPARTMENT_DETAILS, getDepartmentUnits, ALL_SHIRT_SIZES, normalizeDepartmentName } from '../types';
+import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS, DEPARTMENT_DETAILS, getDepartmentUnits, ALL_SHIRT_SIZES, normalizeDepartmentName, formatToSurnameFirst } from '../types';
 import { DepartmentDropdown } from './DepartmentDropdown';
 import { updateRegistration, deleteRegistration, findDuplicateRegistration } from '../firebase/registrations';
 import { getTeamBadgeStyle } from '../utils/teamUtils';
@@ -40,6 +40,7 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
 
   const [formData, setFormData] = useState<Registration>({
     ...attendee,
+    fullName: formatToSurnameFirst(attendee.fullName),
     department: normalizeDepartmentName(attendee.department)
   });
 
@@ -48,6 +49,7 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
     try {
       setIsSaving(true);
       const finalDepartment = normalizeDepartmentName(formData.department);
+      const finalFullName = formatToSurnameFirst(formData.fullName.trim());
 
       let finalEmail = formData.email?.trim().toLowerCase() || '';
       if (!finalEmail || finalEmail === 'undefined' || finalEmail === 'null') {
@@ -67,7 +69,7 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
       // Check if update would create duplicate with another attendee
       if (allRegistrations && allRegistrations.length > 0) {
         const dupCheck = findDuplicateRegistration(allRegistrations, {
-          fullName: formData.fullName.trim(),
+          fullName: finalFullName,
           email: finalEmail
         }, attendee.id);
 
@@ -84,7 +86,7 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
       }
 
       await updateRegistration(attendee.id, {
-        fullName: formData.fullName.trim(),
+        fullName: finalFullName,
         nickname: formData.nickname?.trim() || '',
         email: finalEmail,
         age: Number(formData.age),
@@ -150,13 +152,29 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
             <div className="space-y-4 text-sm">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">Full Name</label>
+                  <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1 flex items-center justify-between">
+                    <span>Full Name</span>
+                    <span className="text-[10px] text-[#0038A8] font-bold">Surname, First Name</span>
+                  </label>
                   <input
                     type="text"
                     value={formData.fullName}
+                    placeholder="Hal. Dela Cruz, Juan"
                     onChange={e => setFormData({ ...formData, fullName: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-[#0038A8] outline-hidden font-medium"
                   />
+                  {(() => {
+                    const trimmed = formData.fullName.trim();
+                    const preview = formatToSurnameFirst(trimmed);
+                    if (preview && preview.includes(',') && preview !== trimmed) {
+                      return (
+                        <p className="text-[10px] text-[#0038A8] font-bold mt-1">
+                          Awtomatikong isasave bilang: {preview}
+                        </p>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
                 <div>
                   <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">Palayaw / Nickname</label>

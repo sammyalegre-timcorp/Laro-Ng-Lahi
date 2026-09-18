@@ -11,19 +11,22 @@ import {
   getDocs
 } from 'firebase/firestore';
 import { db } from './config';
-import { Registration, normalizeDepartmentName } from '../types';
+import { Registration, normalizeDepartmentName, formatToSurnameFirst } from '../types';
 
 const REGISTRATIONS_COLLECTION = 'registrations';
 
 /**
- * Normalizes an attendee's full name by removing periods, commas, extra whitespace and converting to lowercase.
+ * Normalizes an attendee's full name by removing punctuation and sorting words
+ * so that "First name Surname" and "Surname, First Name" match during duplicate checks.
  */
 export function normalizeAttendeeName(name: string): string {
-  return (name || '')
+  const cleaned = (name || '')
     .toLowerCase()
     .trim()
     .replace(/[.,\-_#@]/g, ' ')
     .replace(/\s+/g, ' ');
+  const words = cleaned.split(' ').filter(Boolean).sort();
+  return words.join(' ');
 }
 
 /**
@@ -94,8 +97,10 @@ export async function submitRegistration(data: Omit<Registration, 'id' | 'create
     };
   });
 
+  const formattedFullName = formatToSurnameFirst(data.fullName);
+
   const dupCheck = findDuplicateRegistration(existingList, {
-    fullName: data.fullName,
+    fullName: formattedFullName,
     email: normalizedCandidateEmail
   });
 
@@ -110,6 +115,7 @@ export async function submitRegistration(data: Omit<Registration, 'id' | 'create
 
   const docRef = await addDoc(collection(db, REGISTRATIONS_COLLECTION), {
     ...data,
+    fullName: formattedFullName,
     department: normalizeDepartmentName(data.department),
     email: normalizedCandidateEmail,
     createdAt: new Date().toISOString(),
@@ -134,19 +140,26 @@ export function subscribeToRegistrations(
         const d = docSnap.data();
         const rawDept = d.department || '';
         const cleanDept = normalizeDepartmentName(rawDept);
+        const rawName = d.fullName || '';
+        const cleanName = formatToSurnameFirst(rawName);
 
         // Auto-heal in Firestore if an attendee document still has "Technical Solutions Deliver"
-        if (rawDept !== cleanDept && cleanDept === 'Technical Solutions Delivery') {
-          updateDoc(doc(db, REGISTRATIONS_COLLECTION, docSnap.id), {
-            department: 'Technical Solutions Delivery'
-          }).catch((err) => {
-            console.warn(`Auto-repairing department for ${d.fullName || docSnap.id}:`, err);
+        // or has a name not yet in "Surname, First Name" format
+        const needsNameFix = rawName !== cleanName && cleanName.includes(',');
+        const needsDeptFix = rawDept !== cleanDept && cleanDept === 'Technical Solutions Delivery';
+
+        if (needsNameFix || needsDeptFix) {
+          const updatesToPush: Record<string, string> = {};
+          if (needsNameFix) updatesToPush.fullName = cleanName;
+          if (needsDeptFix) updatesToPush.department = cleanDept;
+          updateDoc(doc(db, REGISTRATIONS_COLLECTION, docSnap.id), updatesToPush).catch((err) => {
+            console.warn(`Auto-repairing for ${d.fullName || docSnap.id}:`, err);
           });
         }
 
         return {
           id: docSnap.id,
-          fullName: d.fullName || '',
+          fullName: cleanName || rawName,
           nickname: d.nickname || '',
           age: Number(d.age) || 0,
           gender: d.gender || 'Male',
@@ -177,6 +190,9 @@ export function subscribeToRegistrations(
 }
 
 export async function updateRegistration(id: string, updates: Partial<Registration>): Promise<void> {
+  if (updates.fullName !== undefined) {
+    updates.fullName = formatToSurnameFirst(updates.fullName);
+  }
   if (updates.email !== undefined) {
     const norm = (updates.email || '').trim().toLowerCase();
     if (!norm || norm === 'undefined' || norm === 'null') {
@@ -189,6 +205,36 @@ export async function updateRegistration(id: string, updates: Partial<Registrati
   }
   const docRef = doc(db, REGISTRATIONS_COLLECTION, id);
   await updateDoc(docRef, updates);
+}
+
+/**
+ * Migration helper: Scans all registrations in Firestore and transforms any full name
+ * entered as "First name Surname" into official "Surname, First Name" format.
+ */
+export async function migrateAllNamesToSurnameFirst(): Promise<{ updatedCount: number; updatedNames: string[] }> {
+  const snap = await getDocs(collection(db, REGISTRATIONS_COLLECTION));
+  const batch = writeBatch(db);
+  let updatedCount = 0;
+  const updatedNames: string[] = [];
+
+  for (const docSnap of snap.docs) {
+    const d = docSnap.data();
+    const rawName = d.fullName || '';
+    const formatted = formatToSurnameFirst(rawName);
+    if (rawName !== formatted && formatted.includes(',')) {
+      batch.update(doc(db, REGISTRATIONS_COLLECTION, docSnap.id), {
+        fullName: formatted
+      });
+      updatedCount++;
+      updatedNames.push(`${rawName} ➔ ${formatted}`);
+    }
+  }
+
+  if (updatedCount > 0) {
+    await batch.commit();
+  }
+
+  return { updatedCount, updatedNames };
 }
 
 /**

@@ -12,7 +12,7 @@ import {
   ExternalLink,
   Mail
 } from 'lucide-react';
-import { Registration } from '../types';
+import { Registration, formatToSurnameFirst } from '../types';
 
 interface RegistrationSuccessProps {
   registration: Registration;
@@ -102,7 +102,7 @@ export const RegistrationSuccess: React.FC<RegistrationSuccessProps> = ({
                 Pangalan ng Kalahok
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight">
-                {registration.fullName}
+                {formatToSurnameFirst(registration.fullName)}
               </h2>
               {registration.nickname && (
                 <p className="text-sm text-slate-500 font-medium mt-0.5">

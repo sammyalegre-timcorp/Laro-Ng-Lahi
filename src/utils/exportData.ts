@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { Registration, normalizeDepartmentName } from '../types';
+import { Registration, normalizeDepartmentName, formatToSurnameFirst } from '../types';
 
 export function getAgeBracket(age: number): string {
   if (age < 25) return 'Under 25';
@@ -16,7 +16,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
   const attendeesData = registrations.map((r, index) => ({
     'No.': index + 1,
     'Registration ID': r.id || '',
-    'Full Name': r.fullName,
+    'Full Name': formatToSurnameFirst(r.fullName),
     'Palayaw / Nickname': r.nickname || '-',
     'Employee Email': r.email || '-',
     'Age': r.age,
@@ -82,7 +82,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
     members.forEach((m, idx) => {
       teamRosterData.push({
         'Team Name': `${teamName}`,
-        'Player Name': `${idx + 1}. ${m.fullName}`,
+        'Player Name': `${idx + 1}. ${formatToSurnameFirst(m.fullName)}`,
         'Palayaw': m.nickname || '-',
         'Email': m.email || '-',
         'Age': m.age,
@@ -202,7 +202,7 @@ export function exportToCSV(registrations: Registration[], filename = 'Laro_ng_L
   const rows = registrations.map((r, index) => [
     index + 1,
     escapeCSV(r.id || ''),
-    escapeCSV(r.fullName),
+    escapeCSV(formatToSurnameFirst(r.fullName)),
     escapeCSV(r.nickname || ''),
     escapeCSV(r.email || ''),
     r.age,

@@ -16,7 +16,7 @@ import {
   Mail,
   AlertTriangle
 } from 'lucide-react';
-import { Registration, DEPARTMENTS, DEPARTMENT_DETAILS, getDepartmentUnits, normalizeDepartmentName } from '../types';
+import { Registration, DEPARTMENTS, DEPARTMENT_DETAILS, getDepartmentUnits, normalizeDepartmentName, formatToSurnameFirst } from '../types';
 import { DepartmentDropdown } from './DepartmentDropdown';
 import { submitRegistration, findDuplicateRegistration } from '../firebase/registrations';
 import { RegistrationCountdown, REGISTRATION_DEADLINE_MS } from './RegistrationCountdown';
@@ -56,7 +56,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const duplicateNameAttendee = useMemo(() => {
     const trimmed = formData.fullName.trim();
     if (!trimmed || trimmed.length < 3) return null;
-    const check = findDuplicateRegistration(registrations, { fullName: trimmed, email: '' });
+    const formatted = formatToSurnameFirst(trimmed);
+    const check = findDuplicateRegistration(registrations, { fullName: formatted, email: '' });
     return check.isDuplicate ? check.existing : null;
   }, [formData.fullName, registrations]);
 
@@ -139,12 +140,14 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     }
 
     const resolvedDepartment = normalizeDepartmentName(formData.department);
+    const formattedFullName = formatToSurnameFirst(formData.fullName.trim());
+    const fallbackNickname = formData.fullName.trim().split(/\s+/)[0] || '';
 
     try {
       setLoading(true);
       const submissionPayload: Omit<Registration, 'id' | 'createdAt'> = {
-        fullName: formData.fullName.trim(),
-        nickname: formData.nickname.trim() || formData.fullName.trim().split(' ')[0],
+        fullName: formattedFullName,
+        nickname: formData.nickname.trim() || fallbackNickname,
         email: resolvedEmail,
         age: ageNum,
         gender: formData.gender,
@@ -299,8 +302,11 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             
             {/* Full Name */}
             <div>
-              <label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5 tracking-widest">
-                Buong Pangalan (Full Name) <span className="text-[#CE1126]">*</span>
+              <label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5 tracking-widest flex items-center justify-between">
+                <span>Buong Pangalan (Full Name) <span className="text-[#CE1126]">*</span></span>
+                <span className="text-[10px] text-slate-400 font-normal lowercase tracking-normal">
+                  Ilagay bilang: First name Surname
+                </span>
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
@@ -315,6 +321,30 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                   }`}
                 />
               </div>
+
+              {/* Dynamic Database Format Preview */}
+              {(() => {
+                const trimmed = formData.fullName.trim();
+                const preview = formatToSurnameFirst(trimmed);
+                if (preview && preview.includes(',') && preview !== trimmed) {
+                  return (
+                    <div className="mt-2 px-3 py-2 rounded-xl bg-blue-50/80 border border-blue-200 text-[#0038A8] text-xs font-medium flex items-center gap-2">
+                      <span className="text-[9px] font-black uppercase tracking-wider bg-[#0038A8] text-white px-2 py-0.5 rounded shadow-xs">
+                        Database & Admin Format
+                      </span>
+                      <span className="text-slate-700">
+                        Isasave bilang: <strong className="font-bold text-slate-900">{preview}</strong>
+                      </span>
+                    </div>
+                  );
+                }
+                return (
+                  <p className="text-[11px] text-slate-400 mt-1.5 font-medium">
+                    Ilagay ang First name bago ang Surname (Hal. <em>Juan Dela Cruz</em>). Awtomatikong ise-save sa database at Admin Portal bilang <strong>"Surname, First Name"</strong> (Hal. <em>Dela Cruz, Juan</em>).
+                  </p>
+                );
+              })()}
+
               {duplicateNameAttendee && (
                 <div className="mt-2 p-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-medium flex items-start gap-2 animate-in fade-in duration-200">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
