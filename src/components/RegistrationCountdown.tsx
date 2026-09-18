@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Timer, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Timer, Clock, AlertTriangle, CheckCircle2, Megaphone } from 'lucide-react';
+import {
+  EventConfig,
+  DEFAULT_EVENT_CONFIG,
+  formatDeadlineDisplay,
+  isRegistrationClosedWithConfig
+} from '../types';
+import { subscribeToEventConfig } from '../firebase/eventConfig';
 
-// Registration deadline: September 18, 2026 at 7:00:00 PM Philippine Standard Time (UTC+8)
-const DEADLINE_ISO = '2026-09-18T19:00:00+08:00';
-export const REGISTRATION_DEADLINE_MS = new Date(DEADLINE_ISO).getTime();
+export const REGISTRATION_DEADLINE_MS = DEFAULT_EVENT_CONFIG.deadlineMs;
 
 interface TimeRemaining {
   days: number;
@@ -14,9 +19,9 @@ interface TimeRemaining {
   totalMs: number;
 }
 
-function calculateTimeRemaining(): TimeRemaining {
+function calculateTimeRemaining(targetMs: number): TimeRemaining {
   const now = Date.now();
-  const diff = REGISTRATION_DEADLINE_MS - now;
+  const diff = targetMs - now;
 
   if (diff <= 0) {
     return {
@@ -44,18 +49,47 @@ function calculateTimeRemaining(): TimeRemaining {
   };
 }
 
-export const RegistrationCountdown: React.FC = () => {
-  const [timeLeft, setTimeLeft] = useState<TimeRemaining>(calculateTimeRemaining);
+interface RegistrationCountdownProps {
+  eventConfig?: EventConfig;
+}
+
+export const RegistrationCountdown: React.FC<RegistrationCountdownProps> = ({
+  eventConfig: propConfig
+}) => {
+  const [internalConfig, setInternalConfig] = useState<EventConfig>(propConfig || DEFAULT_EVENT_CONFIG);
 
   useEffect(() => {
+    if (propConfig) {
+      setInternalConfig(propConfig);
+      return;
+    }
+
+    const unsubscribe = subscribeToEventConfig((cfg) => {
+      setInternalConfig(cfg);
+    });
+    return () => unsubscribe();
+  }, [propConfig]);
+
+  const effectiveDeadlineMs = internalConfig.deadlineMs || DEFAULT_EVENT_CONFIG.deadlineMs;
+  const isManuallyClosed = Boolean(internalConfig.isManuallyClosed);
+  const isManuallyOpened = Boolean(internalConfig.isManuallyOpened);
+
+  const [timeLeft, setTimeLeft] = useState<TimeRemaining>(() => calculateTimeRemaining(effectiveDeadlineMs));
+
+  useEffect(() => {
+    setTimeLeft(calculateTimeRemaining(effectiveDeadlineMs));
+
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeRemaining());
+      setTimeLeft(calculateTimeRemaining(effectiveDeadlineMs));
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [effectiveDeadlineMs]);
 
-  if (timeLeft.isExpired) {
+  const isClosed = isManuallyClosed || (!isManuallyOpened && timeLeft.isExpired);
+  const deadlineFormat = formatDeadlineDisplay(effectiveDeadlineMs);
+
+  if (isClosed) {
     return (
       <div className="bg-gradient-to-r from-red-600 to-rose-700 text-white rounded-3xl p-5 sm:p-6 shadow-lg border border-red-500 mb-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
@@ -71,8 +105,16 @@ export const RegistrationCountdown: React.FC = () => {
                 Sarado na ang Opisyal na Pagpapatala
               </h3>
               <p className="text-xs text-red-100 font-medium">
-                Nagsara ang rehistrasyon noong Setyembre 18, 2026, 7:00 PM (Philippine Standard Time).
+                {isManuallyClosed
+                  ? 'Kasalukuyang sarado ang pagpapatala ayon sa abiso ng pamunuan.'
+                  : `Nagsara ang rehistrasyon noong ${deadlineFormat.tagalog}.`}
               </p>
+              {internalConfig.customNotice && (
+                <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/20 text-xs font-bold text-yellow-200">
+                  <Megaphone className="w-3.5 h-3.5" />
+                  <span>{internalConfig.customNotice}</span>
+                </div>
+              )}
             </div>
           </div>
           <span className="px-4 py-2 rounded-xl bg-white text-red-700 font-black text-xs uppercase tracking-wider shadow-sm">
@@ -105,18 +147,31 @@ export const RegistrationCountdown: React.FC = () => {
                 <Clock className="w-3 h-3 text-[#FFCD00]" />
                 Philippine Standard Time (PST)
               </span>
+              {isManuallyOpened && (
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 text-[10px] font-black uppercase">
+                  Force Open Active
+                </span>
+              )}
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
               Oras Bago Magsara ang Pagpapatala
             </h3>
             <p className="text-xs sm:text-sm text-blue-100/90 font-medium">
-              Huling araw ng rehistrasyon: <strong className="text-[#FFCD00]">Biyernes, Setyembre 18, 2026 • 7:00 PM</strong>
+              Huling araw ng rehistrasyon: <strong className="text-[#FFCD00]">{deadlineFormat.tagalog}</strong>
             </p>
+
+            {internalConfig.customNotice && (
+              <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#FFCD00]/20 border border-[#FFCD00]/30 text-xs text-[#FFCD00] font-bold">
+                <Megaphone className="w-3.5 h-3.5 shrink-0" />
+                <span>{internalConfig.customNotice}</span>
+              </div>
+            )}
+
             <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-white/10 border border-white/15 text-xs text-amber-200 font-bold">
               <span>📅 Araw ng Palaro:</span>
-              <span className="text-white font-black">Oktubre 13, 2026 (8:00 am - 5:00 pm)</span>
+              <span className="text-white font-black">{internalConfig.eventDate || 'Oktubre 13, 2026 (8:00 am - 5:00 pm)'}</span>
               <span>•</span>
-              <span className="text-[#FFCD00]">Met Sports Park Center</span>
+              <span className="text-[#FFCD00]">{internalConfig.eventVenue || 'Met Sports Park Center'}</span>
             </div>
           </div>
         </div>
@@ -129,7 +184,7 @@ export const RegistrationCountdown: React.FC = () => {
               {String(timeLeft.days).padStart(2, '0')}
             </span>
             <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-blue-200 mt-1">
-              {timeLeft.days === 1 ? 'Araw' : 'Araw'}
+              Araw
             </span>
           </div>
 
@@ -167,3 +222,4 @@ export const RegistrationCountdown: React.FC = () => {
     </div>
   );
 };
+

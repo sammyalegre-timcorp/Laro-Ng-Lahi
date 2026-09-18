@@ -16,10 +16,10 @@ import {
   Mail,
   AlertTriangle
 } from 'lucide-react';
-import { Registration, DEPARTMENTS, DEPARTMENT_DETAILS, getDepartmentUnits, normalizeDepartmentName, formatToSurnameFirst } from '../types';
+import { Registration, DEPARTMENTS, DEPARTMENT_DETAILS, getDepartmentUnits, normalizeDepartmentName, formatToSurnameFirst, EventConfig, DEFAULT_EVENT_CONFIG, isRegistrationClosedWithConfig, formatDeadlineDisplay } from '../types';
 import { DepartmentDropdown } from './DepartmentDropdown';
 import { submitRegistration, findDuplicateRegistration } from '../firebase/registrations';
-import { RegistrationCountdown, REGISTRATION_DEADLINE_MS } from './RegistrationCountdown';
+import { RegistrationCountdown } from './RegistrationCountdown';
 import { EventLocationMap } from './EventLocationMap';
 
 interface RegistrationFormProps {
@@ -27,12 +27,14 @@ interface RegistrationFormProps {
   attendeeCount?: number;
   registrations?: Registration[];
   onNavigate?: (path: string) => void;
+  eventConfig?: EventConfig;
 }
 
 export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   onSuccess,
   registrations = [],
-  onNavigate
+  onNavigate,
+  eventConfig = DEFAULT_EVENT_CONFIG
 }) => {
   const [formData, setFormData] = useState({
     fullName: '',
@@ -47,7 +49,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const isRegistrationClosed = Date.now() >= REGISTRATION_DEADLINE_MS;
+  const isRegistrationClosed = isRegistrationClosedWithConfig(eventConfig);
+  const deadlineFormat = formatDeadlineDisplay(eventConfig?.deadlineMs || DEFAULT_EVENT_CONFIG.deadlineMs);
 
   // Selected department units
   const selectedDeptUnits = useMemo(() => getDepartmentUnits(formData.department), [formData.department]);
@@ -73,8 +76,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     e.preventDefault();
     setErrorMessage(null);
 
-    if (Date.now() >= REGISTRATION_DEADLINE_MS) {
-      setErrorMessage('Paumanhin, sarado na ang opisyal na rehistrasyon noong Setyembre 18, 2026, 7:00 PM PST.');
+    if (isRegistrationClosed) {
+      setErrorMessage(`Paumanhin, sarado na ang opisyal na rehistrasyon (${deadlineFormat.tagalog}).`);
       return;
     }
 
@@ -281,7 +284,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
       </header>
 
       {/* Live Registration Countdown Timer (Philippine Standard Time) */}
-      <RegistrationCountdown />
+      <RegistrationCountdown eventConfig={eventConfig} />
 
       {/* Layout Grid: Left Form (7 cols) & Right Guide Panel (5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative z-10">
@@ -523,7 +526,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               </button>
               <p className="text-center text-[11px] text-slate-400 uppercase tracking-widest font-bold mt-3">
                 {isRegistrationClosed 
-                  ? 'Nagsara na ang rehistrasyon noong Setyembre 18, 2026, 7:00 PM PST'
+                  ? `Nagsara na ang rehistrasyon (${deadlineFormat.tagalog})`
                   : 'Agad na mai-save ang iyong data sa opisyal na listahan ng palaro'}
               </p>
             </div>

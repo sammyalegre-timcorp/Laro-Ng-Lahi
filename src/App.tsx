@@ -6,9 +6,10 @@ import { RegistrationSuccess } from './components/RegistrationSuccess';
 import { AdminPortal } from './components/AdminPortal';
 import { TShirtPortal } from './components/TShirtPortal';
 import { Footer } from './components/Footer';
-import { Registration, Team, DEFAULT_TEAMS } from './types';
+import { Registration, Team, DEFAULT_TEAMS, EventConfig, DEFAULT_EVENT_CONFIG } from './types';
 import { subscribeToRegistrations } from './firebase/registrations';
 import { subscribeToTeams } from './firebase/teams';
+import { subscribeToEventConfig } from './firebase/eventConfig';
 
 function getInitialRoute(): string {
   if (typeof window === 'undefined') return '/';
@@ -57,6 +58,7 @@ export default function App() {
   // Registrations state from Firebase Firestore
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [teams, setTeams] = useState<Team[]>(DEFAULT_TEAMS);
+  const [eventConfig, setEventConfig] = useState<EventConfig>(DEFAULT_EVENT_CONFIG);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -100,7 +102,7 @@ export default function App() {
     };
   }, []);
 
-  // Real-time Firestore Subscription for Registrations
+  // Real-time Firestore Subscription for Registrations, Teams & Event Configuration
   useEffect(() => {
     setLoading(true);
     const unsubscribeRegistrations = subscribeToRegistrations(
@@ -127,9 +129,19 @@ export default function App() {
       }
     );
 
+    const unsubscribeConfig = subscribeToEventConfig(
+      (cfg) => {
+        setEventConfig(cfg);
+      },
+      (err) => {
+        console.error('Event config subscription error:', err);
+      }
+    );
+
     return () => {
       unsubscribeRegistrations();
       unsubscribeTeams();
+      unsubscribeConfig();
     };
   }, []);
 
@@ -168,6 +180,7 @@ export default function App() {
               teams={teams}
               loading={loading}
               error={error}
+              eventConfig={eventConfig}
             />
           ) : currentPath === '/tshirt' ? (
             /* Dedicated T-Shirt & Polo Sizes Page at /tshirt */
@@ -190,6 +203,7 @@ export default function App() {
                 attendeeCount={registrations.length}
                 registrations={registrations}
                 onNavigate={navigate}
+                eventConfig={eventConfig}
               />
             )
           )}

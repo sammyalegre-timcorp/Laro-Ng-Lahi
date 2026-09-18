@@ -23,9 +23,12 @@ import {
   Palette,
   Mail,
   Shirt,
-  LayoutGrid
+  LayoutGrid,
+  Clock,
+  Edit3,
+  Megaphone
 } from 'lucide-react';
-import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS, normalizeDepartmentName, formatToSurnameFirst } from '../types';
+import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS, normalizeDepartmentName, formatToSurnameFirst, EventConfig, DEFAULT_EVENT_CONFIG, formatDeadlineDisplay, isRegistrationClosedWithConfig } from '../types';
 import { exportToExcel, exportToCSV, getAgeBracket } from '../utils/exportData';
 import { AttendeeDetailsModal } from './AttendeeDetailsModal';
 import { TeamBalancerModal } from './TeamBalancerModal';
@@ -34,6 +37,8 @@ import { TeamManagementModal } from './TeamManagementModal';
 import { GameRulesGuide } from './GameRulesGuide';
 import { InteractiveFloorPlan } from './InteractiveFloorPlan';
 import { DuplicateResolverModal } from './DuplicateResolverModal';
+import { DeadlineEditorModal } from './DeadlineEditorModal';
+import { subscribeToEventConfig } from '../firebase/eventConfig';
 import {
   updateRegistration,
   deleteRegistration,
@@ -51,13 +56,15 @@ interface AdminPortalProps {
   loading: boolean;
   error?: string | null;
   onRefresh?: () => void;
+  eventConfig?: EventConfig;
 }
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({
   registrations,
   teams = DEFAULT_TEAMS,
   loading,
-  error
+  error,
+  eventConfig
 }) => {
   // Navigation & Modal States
   const [activeTab, setActiveTab] = useState<'directory' | 'floorplan' | 'rules'>('directory');
@@ -65,6 +72,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [isBalancerOpen, setIsBalancerOpen] = useState(false);
   const [isPrintableRosterOpen, setIsPrintableRosterOpen] = useState(false);
   const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false);
+  const [isDeadlineModalOpen, setIsDeadlineModalOpen] = useState(false);
+
+  // Dynamic Deadline & Event Configuration
+  const [currentEventConfig, setCurrentEventConfig] = useState<EventConfig>(eventConfig || DEFAULT_EVENT_CONFIG);
+
+  React.useEffect(() => {
+    if (eventConfig) {
+      setCurrentEventConfig(eventConfig);
+    }
+    const unsubscribe = subscribeToEventConfig((cfg) => {
+      setCurrentEventConfig(cfg);
+    });
+    return () => unsubscribe();
+  }, [eventConfig]);
 
   // Deletion States
   const [attendeeToDelete, setAttendeeToDelete] = useState<Registration | null>(null);
@@ -456,6 +477,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
           </button>
 
+          {/* Deadline & Cutoff Quick Button */}
+          <button
+            onClick={() => setIsDeadlineModalOpen(true)}
+            className="px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-black uppercase tracking-wider shadow-md hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
+            title="I-edit ang petsa at oras ng deadline / cutoff ng rehistrasyon"
+          >
+            <Clock className="w-4 h-4 text-amber-100" />
+            <span>Deadline / Cutoff</span>
+            <span className={`w-2 h-2 rounded-full ${isRegistrationClosedWithConfig(currentEventConfig) ? 'bg-red-200' : 'bg-emerald-300 animate-ping'}`} />
+          </button>
+
           {/* Format All Names to Surname First Sync Button */}
           <button
             onClick={handleManualFormatNames}
@@ -468,6 +500,75 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Dynamic Registration Deadline & Operations Banner */}
+      {(() => {
+        const isClosed = isRegistrationClosedWithConfig(currentEventConfig);
+        const deadlineDisplay = formatDeadlineDisplay(currentEventConfig.deadlineMs);
+        return (
+          <div className="bg-gradient-to-r from-blue-900 via-[#0038A8] to-indigo-900 text-white rounded-3xl p-5 sm:p-6 shadow-[0_15px_30px_rgba(0,56,168,0.15)] border border-blue-400/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[#FFCD00]/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="flex items-start sm:items-center gap-4 relative z-10">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#FFCD00] text-[#0038A8] flex items-center justify-center shrink-0 shadow-lg font-black">
+                <Clock className="w-7 h-7" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#FFCD00]">
+                    Registration Deadline & Cutoff Control
+                  </span>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                    currentEventConfig.isManuallyClosed
+                      ? 'bg-red-500/30 text-red-200 border border-red-400/40'
+                      : currentEventConfig.isManuallyOpened
+                      ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40'
+                      : isClosed
+                      ? 'bg-rose-500/30 text-rose-200 border border-rose-400/40'
+                      : 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40'
+                  }`}>
+                    {currentEventConfig.isManuallyClosed
+                      ? 'Manual Cutoff (Sarado)'
+                      : currentEventConfig.isManuallyOpened
+                      ? 'Force Open (Overridden)'
+                      : isClosed
+                      ? 'Sarado Na (Cutoff Reached)'
+                      : 'Bukas ang Rehistrasyon (Open)'}
+                  </span>
+                  <span className="text-[11px] text-blue-200 font-medium">
+                    Philippine Standard Time (UTC+8)
+                  </span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  {deadlineDisplay.tagalog}
+                </h2>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <span className="text-xs text-blue-200">
+                    English: <strong className="text-white font-semibold">{deadlineDisplay.english}</strong>
+                  </span>
+                  {currentEventConfig.customNotice && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-xl bg-amber-400/20 text-amber-200 text-xs font-bold border border-amber-400/30">
+                      <Megaphone className="w-3 h-3 text-[#FFCD00]" />
+                      <span>{currentEventConfig.customNotice}</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 w-full md:w-auto shrink-0 relative z-10">
+              <button
+                type="button"
+                onClick={() => setIsDeadlineModalOpen(true)}
+                className="w-full md:w-auto px-6 py-3.5 rounded-2xl bg-[#FFCD00] hover:bg-amber-400 text-[#0038A8] font-black text-xs uppercase tracking-wider shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                title="Baguhin ang petsa o oras ng registration deadline / cutoff"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Baguhin ang Deadline / Cutoff</span>
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Metric Cards Dashboard */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -1208,6 +1309,18 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           onClose={() => setIsTeamManagementOpen(false)}
           onSuccess={() => {
             showToast('Na-update ang mga Teams at Kulay!');
+          }}
+        />
+      )}
+
+      {/* Registration Deadline & Cutoff Editor Modal */}
+      {isDeadlineModalOpen && (
+        <DeadlineEditorModal
+          isOpen={isDeadlineModalOpen}
+          onClose={() => setIsDeadlineModalOpen(false)}
+          eventConfig={currentEventConfig}
+          onSuccessToast={(msg) => {
+            showToast(msg);
           }}
         />
       )}

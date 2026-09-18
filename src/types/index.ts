@@ -1,3 +1,99 @@
+export interface EventConfig {
+  id?: string;
+  deadlineIso: string; // e.g. "2026-09-18T19:00:00+08:00"
+  deadlineMs: number; // timestamp in ms
+  isManuallyClosed?: boolean; // Force closed
+  isManuallyOpened?: boolean; // Force open override
+  eventDate?: string; // e.g. "Oktubre 13, 2026"
+  eventVenue?: string; // e.g. "Met Sports Park Center"
+  customNotice?: string;
+  updatedAt?: string;
+  updatedBy?: string;
+}
+
+export const DEFAULT_DEADLINE_ISO = '2026-09-18T19:00:00+08:00';
+export const DEFAULT_DEADLINE_MS = new Date(DEFAULT_DEADLINE_ISO).getTime();
+
+export const DEFAULT_EVENT_CONFIG: EventConfig = {
+  deadlineIso: DEFAULT_DEADLINE_ISO,
+  deadlineMs: DEFAULT_DEADLINE_MS,
+  isManuallyClosed: false,
+  isManuallyOpened: false,
+  eventDate: 'Oktubre 13, 2026',
+  eventVenue: 'Met Sports Park Center',
+  customNotice: '',
+};
+
+export function isRegistrationClosedWithConfig(config?: EventConfig | null): boolean {
+  if (!config) {
+    return Date.now() >= DEFAULT_DEADLINE_MS;
+  }
+  if (config.isManuallyClosed) return true;
+  if (config.isManuallyOpened) return false;
+  return Date.now() >= (config.deadlineMs || DEFAULT_DEADLINE_MS);
+}
+
+/**
+ * Formats an ISO string or ms timestamp into Philippine Standard Time (PST, UTC+8) display format.
+ */
+export function formatDeadlineDisplay(deadlineIsoOrMs: string | number): {
+  tagalog: string;
+  english: string;
+  timeOnly: string;
+  dateOnly: string;
+} {
+  const date = typeof deadlineIsoOrMs === 'number' ? new Date(deadlineIsoOrMs) : new Date(deadlineIsoOrMs);
+  if (isNaN(date.getTime())) {
+    return {
+      tagalog: 'Setyembre 18, 2026 • 7:00 PM (PST)',
+      english: 'September 18, 2026 • 7:00 PM (PST)',
+      timeOnly: '7:00 PM',
+      dateOnly: 'Setyembre 18, 2026'
+    };
+  }
+
+  // Month names in Tagalog & English
+  const tagalogMonths = [
+    'Enero', 'Pebrero', 'Marso', 'Abril', 'Mayo', 'Hunyo',
+    'Hulyo', 'Agosto', 'Setyembre', 'Oktubre', 'Nobyembre', 'Disyembre'
+  ];
+  const tagalogDays = ['Linggo', 'Lunes', 'Martes', 'Miyerkules', 'Huwebes', 'Biyernes', 'Sabado'];
+  const englishDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const englishMonths = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  // We convert to UTC+8 (Philippine Standard Time)
+  const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+  const pstDate = new Date(utc + (3600000 * 8));
+
+  const year = pstDate.getFullYear();
+  const monthIdx = pstDate.getMonth();
+  const dayOfMonth = pstDate.getDate();
+  const dayOfWeek = pstDate.getDay();
+
+  let hours = pstDate.getHours();
+  const minutes = pstDate.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // 0 becomes 12
+  const minutesStr = minutes < 10 ? `0${minutes}` : `${minutes}`;
+  const timeFormatted = `${hours}:${minutesStr} ${ampm}`;
+
+  const tagalogDay = tagalogDays[dayOfWeek];
+  const englishDay = englishDays[dayOfWeek];
+  const tagalogMonth = tagalogMonths[monthIdx];
+  const englishMonth = englishMonths[monthIdx];
+
+  return {
+    tagalog: `${tagalogDay}, ${tagalogMonth} ${dayOfMonth}, ${year} • ${timeFormatted} (PST)`,
+    english: `${englishDay}, ${englishMonth} ${dayOfMonth}, ${year} • ${timeFormatted} (PST)`,
+    timeOnly: `${timeFormatted} PST`,
+    dateOnly: `${tagalogMonth} ${dayOfMonth}, ${year}`
+  };
+}
+
 export interface DepartmentItem {
   name: string;
   units: string[];
