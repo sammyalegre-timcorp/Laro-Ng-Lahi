@@ -97,6 +97,7 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
         medicalNotes: formData.medicalNotes?.trim() || '',
         shirtGenderCut: formData.shirtGenderCut || null,
         shirtSize: formData.shirtSize || null,
+        jerseyName: formData.jerseyName?.trim().toUpperCase() || '',
         shirtUpdatedDate: formData.shirtSize ? (formData.shirtUpdatedDate || new Date().toISOString()) : null
       });
       setIsEditing(false);
@@ -292,6 +293,23 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
                 </div>
 
                 <div className="sm:col-span-2">
+                  <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">
+                    Pangalan sa Likod ng Jersey (Jersey Name)
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={18}
+                    value={formData.jerseyName || ''}
+                    onChange={e => setFormData({ ...formData, jerseyName: e.target.value.toUpperCase() })}
+                    placeholder="Hal. DELA CRUZ o JUANING"
+                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-[#0038A8] outline-hidden font-mono uppercase font-black tracking-wider text-sm"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Ito ang itatatak sa likod ng jersey sa Palarong Pinoy 2026 (maximum 18 characters).
+                  </p>
+                </div>
+
+                <div className="sm:col-span-2">
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <label className="block text-[11px] font-black uppercase tracking-widest text-slate-500">
                       Medical / Health Notes <span className="text-[#CE1126]">*</span>
@@ -401,9 +419,19 @@ export const AttendeeDetailsModal: React.FC<AttendeeDetailsModalProps> = ({
                       Opisyal na Sukat ng Jersey
                     </span>
                     {attendee.shirtSize ? (
-                      <span className="text-sm font-black text-[#0038A8]">
-                        {attendee.shirtGenderCut === 'Women' ? 'Pang-Babae' : 'Pang-Lalaki'} • Sukat: <span className="bg-[#0038A8] text-white px-2 py-0.5 rounded-md ml-1">{attendee.shirtSize}</span>
-                      </span>
+                      <div>
+                        <span className="text-sm font-black text-[#0038A8]">
+                          {attendee.shirtGenderCut === 'Women' ? 'Pang-Babae' : 'Pang-Lalaki'} • Sukat: <span className="bg-[#0038A8] text-white px-2 py-0.5 rounded-md ml-1">{attendee.shirtSize}</span>
+                        </span>
+                        {attendee.jerseyName && (
+                          <div className="text-xs font-black text-slate-700 mt-1 uppercase flex items-center gap-1.5">
+                            <span className="text-slate-500 font-bold">Jersey Name:</span>
+                            <span className="bg-blue-100 text-[#0038A8] font-mono px-2 py-0.5 rounded-md">
+                              "{attendee.jerseyName}"
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <span className="text-xs font-bold text-amber-600 italic">
                         Hindi pa pumipili sa portal ng sukat ng jersey

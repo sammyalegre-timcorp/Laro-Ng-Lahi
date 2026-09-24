@@ -26,6 +26,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
     'Assigned Team': r.assignedTeam || 'Unassigned',
     'T-Shirt Fit': r.shirtGenderCut ? `${r.shirtGenderCut}'s Cut` : 'Pending',
     'T-Shirt Size': r.shirtSize || 'Pending',
+    'Jersey Name / Back Print': r.jerseyName || '-',
     'Medical / Health Notes': r.medicalNotes || 'None',
     'Status': r.status?.toUpperCase() || 'CONFIRMED',
     'Registered Date': r.createdAt ? new Date(r.createdAt).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' }) : '-'
@@ -47,6 +48,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
     { wch: 22 }, // Team
     { wch: 16 }, // T-Shirt Fit
     { wch: 16 }, // T-Shirt Size
+    { wch: 22 }, // Jersey Name
     { wch: 30 }, // Medical
     { wch: 14 }, // Status
     { wch: 22 }, // Date
@@ -89,6 +91,7 @@ export function exportToExcel(registrations: Registration[], filename = 'Laro_ng
         'Gender': m.gender,
         'Department': normalizeDepartmentName(m.department) || '-',
         'T-Shirt Size': m.shirtSize ? `${m.shirtGenderCut || 'Men'}'s ${m.shirtSize}` : 'Pending',
+        'Jersey Name': m.jerseyName || '-',
         'Medical Notes': m.medicalNotes || '-'
       });
     });
@@ -188,6 +191,7 @@ export function exportToCSV(registrations: Registration[], filename = 'Laro_ng_L
     'Assigned Team',
     'T-Shirt Fit',
     'T-Shirt Size',
+    'Jersey Name / Back Print',
     'Medical / Health Notes',
     'Status',
     'Registered Date'
@@ -212,6 +216,7 @@ export function exportToCSV(registrations: Registration[], filename = 'Laro_ng_L
     escapeCSV(r.assignedTeam || 'Unassigned'),
     escapeCSV(r.shirtGenderCut ? `${r.shirtGenderCut}'s Cut` : 'Pending'),
     escapeCSV(r.shirtSize || 'Pending'),
+    escapeCSV(r.jerseyName || '-'),
     escapeCSV(r.medicalNotes || ''),
     escapeCSV(r.status || 'confirmed'),
     escapeCSV(r.createdAt ? new Date(r.createdAt).toLocaleString('en-PH') : '')

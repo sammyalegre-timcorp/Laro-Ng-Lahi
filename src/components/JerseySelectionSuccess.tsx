@@ -25,6 +25,7 @@ interface JerseySelectionSuccessProps {
   teamBadgeStyle?: React.CSSProperties | null;
   selectedCut: 'Men' | 'Women';
   selectedSize: string;
+  jerseyName?: string;
   measurement?: ShirtMeasurement;
   showModal?: boolean;
   onCloseModal?: () => void;
@@ -39,6 +40,7 @@ export const JerseySelectionSuccess: React.FC<JerseySelectionSuccessProps> = ({
   teamBadgeStyle,
   selectedCut,
   selectedSize,
+  jerseyName,
   measurement,
   showModal = false,
   onCloseModal,
@@ -74,6 +76,7 @@ export const JerseySelectionSuccess: React.FC<JerseySelectionSuccessProps> = ({
   };
 
   const isWomenCut = selectedCut === 'Women';
+  const effectiveJerseyName = (attendee.jerseyName || jerseyName || '').trim().toUpperCase();
 
   return (
     <div className="max-w-xl mx-auto px-4 py-6 sm:py-10 animate-in fade-in duration-300">
@@ -226,6 +229,43 @@ export const JerseySelectionSuccess: React.FC<JerseySelectionSuccessProps> = ({
               }`}>
                 Sukat: {selectedSize}
               </div>
+            </div>
+
+            {/* Official Jersey Name / Back Print Highlight */}
+            {effectiveJerseyName && (
+              <div className="my-3 p-3.5 rounded-xl bg-white/90 border border-slate-200 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm shrink-0">
+                    🎽
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                      Pangalan sa Likod ng Jersey (Back Print)
+                    </span>
+                    <span className="font-mono font-black text-slate-900 text-sm tracking-wider uppercase">
+                      "{effectiveJerseyName}"
+                    </span>
+                  </div>
+                </div>
+                <div className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 font-mono text-[10px] font-bold tracking-widest uppercase">
+                  Back Shoulder Print
+                </div>
+              </div>
+            )}
+
+            {/* Mini Visual Jersey Back Graphic (no number) */}
+            <div className="my-3 p-4 rounded-xl bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white shadow-inner flex flex-col items-center justify-center relative overflow-hidden">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#0038A8] via-[#FFCD00] to-[#CE1126]" />
+              <div className="w-10 h-3 rounded-b-full bg-slate-950/80 border-b border-white/20 mb-2.5" />
+              <span className="text-[10px] tracking-widest text-slate-400 font-semibold uppercase mb-1.5">
+                {assignedTeamObj ? assignedTeamObj.name : 'TIM LARO NG LAHI'}
+              </span>
+              <div className="font-mono font-black text-base sm:text-lg tracking-widest text-[#FFCD00] uppercase px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 shadow-xs max-w-full truncate my-1">
+                {effectiveJerseyName || 'OFFICIAL JERSEY'}
+              </div>
+              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-mono mt-2 pt-2 border-t border-white/10 w-full text-center">
+                PASAY 2026 • {selectedSize} ({isWomenCut ? "Women's" : "Men's"})
+              </span>
             </div>
 
             {/* Measurement Specifications Grid */}
@@ -404,6 +444,14 @@ export const JerseySelectionSuccess: React.FC<JerseySelectionSuccessProps> = ({
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Koponan:</span>
                 <span className="text-xs font-black text-[#0038A8]">{attendee.assignedTeam || 'Pending Allocation'}</span>
               </div>
+              {effectiveJerseyName && (
+                <div className="flex items-center justify-between border-b border-slate-200/80 pb-2 mb-2">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Jersey Name (Back Print):</span>
+                  <span className="font-mono font-black text-xs text-amber-700 uppercase bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    "{effectiveJerseyName}"
+                  </span>
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Sukat ng Jersey:</span>
                 <div className="flex items-center gap-1.5">

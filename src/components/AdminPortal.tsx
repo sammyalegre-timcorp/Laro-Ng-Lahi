@@ -1059,12 +1059,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           })()}
                         </td>
 
-                        {/* T-Shirt Size */}
+                        {/* T-Shirt Size & Jersey Name */}
                         <td className="p-4 whitespace-nowrap">
                           {attendee.shirtSize ? (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-blue-50 border border-blue-200/80 text-[#0038A8] text-xs font-black">
-                              <Shirt className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                              <span>{attendee.shirtGenderCut === 'Women' ? 'W' : 'M'} • {attendee.shirtSize}</span>
+                            <div className="space-y-1">
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-blue-50 border border-blue-200/80 text-[#0038A8] text-xs font-black">
+                                <Shirt className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                                <span>{attendee.shirtGenderCut === 'Women' ? 'W' : 'M'} • {attendee.shirtSize}</span>
+                              </div>
+                              {attendee.jerseyName && (
+                                <div className="text-[10px] font-mono font-black text-slate-700 tracking-wider uppercase block">
+                                  🎽 "{attendee.jerseyName}"
+                                </div>
+                              )}
                             </div>
                           ) : (
                             <span className="text-[11px] font-bold text-amber-600/80 italic">

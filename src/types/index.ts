@@ -446,6 +446,7 @@ export interface Registration {
   shirtSize?: string;
   shirtGenderCut?: 'Men' | 'Women' | string;
   shirtUpdatedDate?: string;
+  jerseyName?: string; // Pangalan na itatatak sa likod ng jersey
   favoriteGames?: string[];
   emergencyContactName?: string;
   emergencyContactPhone?: string;

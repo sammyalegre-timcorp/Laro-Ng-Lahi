@@ -171,6 +171,7 @@ export function subscribeToRegistrations(
           shirtSize: d.shirtSize || '',
           shirtGenderCut: d.shirtGenderCut || '',
           shirtUpdatedDate: d.shirtUpdatedDate || '',
+          jerseyName: d.jerseyName || '',
           favoriteGames: Array.isArray(d.favoriteGames) ? d.favoriteGames : [],
           medicalNotes: d.medicalNotes || '',
           emergencyContactName: d.emergencyContactName || '',
@@ -270,14 +271,19 @@ export async function migrateTechnicalSolutionsDeliver(): Promise<{ updatedCount
 export async function saveAttendeeTShirtSize(
   id: string,
   shirtSize: string,
-  shirtGenderCut: 'Men' | 'Women' | string
+  shirtGenderCut: 'Men' | 'Women' | string,
+  jerseyName?: string
 ): Promise<void> {
   const docRef = doc(db, REGISTRATIONS_COLLECTION, id);
-  await updateDoc(docRef, {
+  const updates: Record<string, any> = {
     shirtSize,
     shirtGenderCut,
     shirtUpdatedDate: new Date().toISOString()
-  });
+  };
+  if (jerseyName !== undefined) {
+    updates.jerseyName = jerseyName.trim().toUpperCase();
+  }
+  await updateDoc(docRef, updates);
 }
 
 export async function deleteRegistration(id: string): Promise<void> {

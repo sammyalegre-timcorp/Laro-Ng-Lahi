@@ -76,6 +76,7 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
   // Form selection states
   const [selectedCut, setSelectedCut] = useState<'Men' | 'Women'>('Men');
   const [selectedSize, setSelectedSize] = useState<string>('L');
+  const [jerseyName, setJerseyName] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
   const [showAccomplishedModal, setShowAccomplishedModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -96,7 +97,7 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
   // Is size already officially saved and locked for this attendee?
   const isSizeLocked = Boolean(currentAttendee?.shirtSize);
 
-  // Sync attendee's current size when identified and show finish page if already registered
+  // Sync attendee's current size and jersey name when identified and show finish page if already registered
   useEffect(() => {
     if (currentAttendee) {
       if (currentAttendee.shirtGenderCut === 'Women' || currentAttendee.shirtGenderCut === 'Men') {
@@ -117,8 +118,58 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
       } else {
         setViewMode('form');
       }
+
+      // Sync or initialize jersey name
+      if (currentAttendee.jerseyName) {
+        setJerseyName(currentAttendee.jerseyName);
+      } else if (currentAttendee.nickname) {
+        setJerseyName(currentAttendee.nickname.trim().toUpperCase());
+      } else {
+        const parts = currentAttendee.fullName.includes(',')
+          ? currentAttendee.fullName.split(',')[0].trim().toUpperCase()
+          : currentAttendee.fullName.trim().split(' ').pop()?.toUpperCase() || '';
+        setJerseyName(parts.slice(0, 16));
+      }
     }
-  }, [currentAttendee?.id, currentAttendee?.shirtSize]);
+  }, [currentAttendee?.id, currentAttendee?.shirtSize, currentAttendee?.jerseyName]);
+
+  // Generate suggested jersey names based on attendee details
+  const nameSuggestions = useMemo(() => {
+    if (!currentAttendee) return [];
+    const list: { label: string; value: string }[] = [];
+
+    if (currentAttendee.nickname?.trim()) {
+      list.push({ label: 'Palayaw', value: currentAttendee.nickname.trim().toUpperCase() });
+    }
+
+    if (currentAttendee.fullName.includes(',')) {
+      const parts = currentAttendee.fullName.split(',');
+      const surname = parts[0]?.trim().toUpperCase();
+      const first = parts[1]?.trim().split(' ')[0]?.toUpperCase();
+      if (surname) list.push({ label: 'Apelyido', value: surname });
+      if (first) list.push({ label: 'First Name', value: first });
+    } else {
+      const parts = currentAttendee.fullName.trim().split(' ');
+      if (parts.length > 1) {
+        const surname = parts[parts.length - 1].toUpperCase();
+        const firstName = parts[0].toUpperCase();
+        list.push({ label: 'Apelyido', value: surname });
+        list.push({ label: 'First Name', value: firstName });
+      } else if (parts.length === 1 && parts[0]) {
+        list.push({ label: 'Pangalan', value: parts[0].toUpperCase() });
+      }
+    }
+
+    const uniqueMap = new Map<string, { label: string; value: string }>();
+    list.forEach(item => {
+      const clean = item.value.slice(0, 16);
+      if (clean && !uniqueMap.has(clean)) {
+        uniqueMap.set(clean, { label: item.label, value: clean });
+      }
+    });
+
+    return Array.from(uniqueMap.values());
+  }, [currentAttendee]);
 
   const triggerCelebrationConfetti = () => {
     const count = 180;
@@ -182,7 +233,7 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
     }
   };
 
-  // Handle saving Jersey size
+  // Handle saving Jersey size & jersey name
   const handleSaveSize = async () => {
     if (!currentAttendee?.id) {
       setErrorMessage('Hindi matagpuan ang iyong registration record. Pakisubukan muling mag-login.');
@@ -194,15 +245,21 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
       return;
     }
 
+    const trimmedJerseyName = jerseyName.trim().toUpperCase();
+    if (!trimmedJerseyName) {
+      setErrorMessage('Pakilagay ang inyong Jersey Name (pangalan sa likod ng jersey) bago i-save.');
+      return;
+    }
+
     try {
       setIsSaving(true);
       setErrorMessage(null);
-      await saveAttendeeTShirtSize(currentAttendee.id, selectedSize, selectedCut);
+      await saveAttendeeTShirtSize(currentAttendee.id, selectedSize, selectedCut, trimmedJerseyName);
       setViewMode('finish');
       setShowAccomplishedModal(true);
       triggerCelebrationConfetti();
     } catch (err: any) {
-      console.error('Error saving jersey size:', err);
+      console.error('Error saving jersey size and name:', err);
       setErrorMessage('Nagkaroon ng aberya sa pag-save. Pakisubukan muli.');
     } finally {
       setIsSaving(false);
@@ -407,6 +464,7 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
         teamBadgeStyle={teamBadgeStyle}
         selectedCut={selectedCut}
         selectedSize={selectedSize}
+        jerseyName={currentAttendee.jerseyName || jerseyName}
         measurement={currentMeasurement}
         showModal={showAccomplishedModal}
         onCloseModal={() => setShowAccomplishedModal(false)}
@@ -441,6 +499,12 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
                 {currentAttendee.nickname && (
                   <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-[#0038A8] text-xs font-bold">
                     "{currentAttendee.nickname}"
+                  </span>
+                )}
+                {currentAttendee.jerseyName && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-xs font-mono font-black flex items-center gap-1">
+                    <span>🎽</span>
+                    <span>Jersey: "{currentAttendee.jerseyName}"</span>
                   </span>
                 )}
                 {assignedTeamObj && teamBadgeStyle && (
@@ -482,6 +546,11 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
                       <Lock className="w-2.5 h-2.5" /> Naka-lock
                     </span>
                   </div>
+                  {currentAttendee.jerseyName && (
+                    <div className="text-[11px] font-mono font-bold text-emerald-900 mt-0.5">
+                      Jersey: "{currentAttendee.jerseyName}"
+                    </div>
+                  )}
                   {currentAttendee.shirtUpdatedDate && (
                     <div className="text-[10px] text-emerald-700 font-normal">
                       Naitala: {new Date(currentAttendee.shirtUpdatedDate).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -541,7 +610,7 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
                     <Lock className="w-3 h-3" /> Naka-save na
                   </span>
                 ) : (
-                  <span className="text-[11px] font-bold text-slate-400">Hakbang 1 & 2</span>
+                  <span className="text-[11px] font-bold text-slate-400">Hakbang 1, 2 at 3</span>
                 )}
               </div>
 
@@ -568,10 +637,92 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
                 </div>
               )}
 
-              {/* Step 1: Fit / Cut Selection (Pang-Lalaki & Pang-Babae) */}
+              {/* Step 1: Pangalan sa Likod ng Jersey (Jersey Name) */}
+              <div className="mb-5 pb-4 border-b border-slate-100">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700">
+                    1. Pangalan sa Likod ng Jersey (Jersey Name) <span className="text-[#CE1126]">*</span>
+                  </label>
+                  <span className="text-[10px] font-mono font-bold text-slate-400">
+                    {jerseyName.length}/16 titik
+                  </span>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    disabled={isSizeLocked}
+                    maxLength={16}
+                    value={jerseyName}
+                    onChange={e => setJerseyName(e.target.value.toUpperCase())}
+                    placeholder="HAL. DELA CRUZ O JUANING"
+                    className={`w-full px-4 py-3 rounded-2xl border-2 font-mono uppercase font-black tracking-widest text-sm sm:text-base outline-hidden transition-all ${
+                      isSizeLocked
+                        ? 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed'
+                        : 'bg-white border-slate-200 focus:border-[#0038A8] text-slate-900 focus:ring-4 focus:ring-blue-100'
+                    }`}
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-base select-none">
+                    🎽
+                  </span>
+                </div>
+
+                {/* Quick Suggestion Chips (if not locked) */}
+                {!isSizeLocked && nameSuggestions.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 mr-1">
+                      Mungkahing Itatak:
+                    </span>
+                    {nameSuggestions.map(s => (
+                      <button
+                        key={s.value}
+                        type="button"
+                        onClick={() => setJerseyName(s.value)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+                          jerseyName === s.value
+                            ? 'bg-[#0038A8] border-[#0038A8] text-white shadow-2xs'
+                            : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {s.value} <span className="text-[9px] opacity-75 font-normal">({s.label})</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <p className="text-[10px] text-slate-500 mt-1.5">
+                  Ito ang opisyal na itatatak sa likod ng jersey sa Palarong Pinoy 2026.
+                </p>
+
+                {/* Live Jersey Back Preview Mini-Card (no number) */}
+                <div className="mt-3 p-4 rounded-2xl bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white shadow-inner flex flex-col items-center justify-center relative overflow-hidden border border-slate-800">
+                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#0038A8] via-[#FFCD00] to-[#CE1126]" />
+                  <div className="w-10 h-2.5 rounded-b-full bg-slate-950/80 border-b border-white/20 mb-2.5" />
+                  
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                    <span>{assignedTeamObj ? assignedTeamObj.name : 'TIM CORPO'}</span>
+                    <span>•</span>
+                    <span className="text-[#FFCD00]">LIVE BACK PREVIEW</span>
+                  </div>
+
+                  <div className="w-full text-center px-4 py-2">
+                    <span className="font-mono font-black text-base sm:text-lg tracking-widest text-[#FFCD00] uppercase bg-white/5 border border-white/10 px-4 py-1.5 rounded-md inline-block max-w-full truncate shadow-xs">
+                      {jerseyName.trim() || 'IYONG PANGALAN'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400 tracking-wider mt-2 pt-2 border-t border-white/10 w-full justify-center">
+                    <span>{selectedCut === 'Women' ? "Women's Fit" : "Men's Fit"}</span>
+                    <span>•</span>
+                    <span className="text-white font-bold">Size {selectedSize}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2: Fit / Cut Selection (Pang-Lalaki & Pang-Babae) */}
               <div className="mb-4">
                 <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1.5">
-                  1. Uri ng Tabas (Fit) <span className="text-[#CE1126]">*</span>
+                  2. Uri ng Tabas (Fit) <span className="text-[#CE1126]">*</span>
                 </label>
                 <div className="grid grid-cols-2 gap-2.5">
                   <button
@@ -620,11 +771,11 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
                 </div>
               </div>
 
-              {/* Step 2: Size Buttons Selection - Aligned with the table on the right */}
+              {/* Step 3: Size Buttons Selection - Aligned with the table on the right */}
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-black uppercase tracking-wider text-slate-700">
-                    2. Piliin ang Sukat (Size) <span className="text-[#CE1126]">*</span>
+                    3. Piliin ang Sukat (Size) <span className="text-[#CE1126]">*</span>
                   </label>
                   <span className="text-[11px] text-slate-500 font-bold">
                     {selectedCut === 'Women' ? 'Pang-Babae' : 'Pang-Lalaki'}
@@ -698,7 +849,7 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
                     <span>Opisyal Nang Naipasa at Naka-lock</span>
                   </div>
                   <p className="text-[10px] text-slate-400 text-center font-medium">
-                    Kung nais ninyong palitan ang inyong sukat, makipag-ugnayan sa inyong Sportsfest Admin.
+                    Kung nais ninyong palitan ang inyong sukat o jersey name, makipag-ugnayan sa inyong Sportsfest Admin.
                   </p>
                 </div>
               ) : (
@@ -712,12 +863,12 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
                     {isSaving ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Sine-save ang iyong sukat...</span>
+                        <span>Sine-save ang sukat at jersey name...</span>
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="w-5 h-5" />
-                        <span>Opisyal na I-save ang Sukat ng Jersey</span>
+                        <span>Opisyal na I-save ang Sukat at Jersey Name</span>
                       </>
                     )}
                   </button>
