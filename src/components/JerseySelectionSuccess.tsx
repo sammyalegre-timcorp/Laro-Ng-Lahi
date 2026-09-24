@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import {
   CheckCircle,
@@ -15,9 +15,13 @@ import {
   Mail,
   Shirt,
   Sparkles,
-  X
+  X,
+  Eye,
+  ZoomIn,
+  Info
 } from 'lucide-react';
 import { Registration, Team, ShirtMeasurement, normalizeDepartmentName, formatToSurnameFirst } from '../types';
+import jerseyMeasurementGuideImg from '../assets/images/jersey_measurement_1790236031117.jpg';
 
 interface JerseySelectionSuccessProps {
   attendee: Registration;
@@ -48,6 +52,8 @@ export const JerseySelectionSuccess: React.FC<JerseySelectionSuccessProps> = ({
   onNavigate,
   onLogout
 }) => {
+  const [showMeasurementModal, setShowMeasurementModal] = useState(false);
+
   useEffect(() => {
     // Fire festive fiesta confetti upon entering the jersey finish page
     const count = 180;
@@ -292,8 +298,20 @@ export const JerseySelectionSuccess: React.FC<JerseySelectionSuccessProps> = ({
               </p>
             )}
 
+            {/* Quick Button to View Jersey Measurement Diagram */}
+            <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowMeasurementModal(true)}
+                className="text-[11px] font-bold text-[#0038A8] hover:text-blue-800 flex items-center gap-1.5 transition-colors cursor-pointer bg-blue-50/80 hover:bg-blue-100/80 px-3 py-1 rounded-xl border border-blue-200/60 shadow-2xs"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Silipin ang Gabay sa Pagsukat (Jersey Diagram)</span>
+              </button>
+            </div>
+
             {attendee.shirtUpdatedDate && (
-              <p className="text-[10px] text-slate-500 text-center mt-2.5 font-medium">
+              <p className="text-[10px] text-slate-500 text-center mt-2 font-medium">
                 Petsa ng Pagpili: {new Date(attendee.shirtUpdatedDate).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </p>
             )}
@@ -477,6 +495,94 @@ export const JerseySelectionSuccess: React.FC<JerseySelectionSuccessProps> = ({
             >
               <span>Tingnan ang Katibayan (Finish Page) →</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Full-screen Jersey Measurement Guide Modal */}
+      {showMeasurementModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-300 max-w-2xl w-full max-h-[92vh] overflow-y-auto flex flex-col relative animate-in zoom-in-95 duration-200">
+            {/* Top accent gradient */}
+            <div className="h-2.5 bg-gradient-to-r from-[#0038A8] via-[#FFCD00] to-[#CE1126] shrink-0" />
+
+            {/* Modal Header */}
+            <div className="p-4 sm:p-6 pb-3 flex items-center justify-between border-b border-slate-100 shrink-0">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Ruler className="w-5 h-5 text-[#0038A8]" />
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                    Opisyal na Gabay sa Pagsukat ng Jersey
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Laro ng Lahi 2026 • Length (Haba) & Width Paikot (Chest Circumference)
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMeasurementModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 sm:p-6 space-y-4">
+              {/* Full Image Container */}
+              <div className="bg-slate-50 rounded-2xl p-4 sm:p-6 border border-slate-200 flex items-center justify-center">
+                <img
+                  src={jerseyMeasurementGuideImg}
+                  alt="Opisyal na Sukat ng Jersey - Diagram"
+                  className="max-h-[420px] w-auto object-contain rounded-xl shadow-xs"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+
+              {/* Measurement Legend & Explanations */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3.5 rounded-2xl bg-red-50/70 border-2 border-red-200/80">
+                  <div className="flex items-center gap-2 font-black text-red-900 mb-1">
+                    <span className="px-2 py-0.5 rounded-md bg-[#CE1126] text-white text-[10px] uppercase tracking-wider font-mono">
+                      LENGTH
+                    </span>
+                    <span>Haba ng Damit</span>
+                  </div>
+                  <p className="text-slate-700 leading-relaxed font-medium">
+                    Sukat mula sa pinakamataas na punto ng balikat (sa tabi ng kuwelyo) diretso pababa hanggang sa laylayan ng damit.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-blue-50/70 border-2 border-blue-200/80">
+                  <div className="flex items-center gap-2 font-black text-blue-900 mb-1">
+                    <span className="px-2 py-0.5 rounded-md bg-[#0038A8] text-white text-[10px] uppercase tracking-wider font-mono">
+                      WIDTH (PAIKOT)
+                    </span>
+                    <span>Lapad Paikot sa Dibdib</span>
+                  </div>
+                  <p className="text-slate-700 leading-relaxed font-medium">
+                    Gamit ang measuring tape, sukatin paikot ang dibdib (circumference) sa ilalim lamang ng manggas sa pinakamalapad na bahagi.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-100 text-slate-700 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2 font-medium">
+                  <Info className="w-4 h-4 text-[#0038A8] shrink-0" />
+                  <span>
+                    Ang iyong napiling sukat ay <strong>{selectedSize} ({isWomenCut ? "Women's Fit" : "Men's Fit"})</strong>.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowMeasurementModal(false)}
+                  className="px-5 py-2.5 rounded-xl bg-[#0038A8] hover:bg-blue-800 text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs transition-all self-end sm:self-auto"
+                >
+                  Isara ang Gabay
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

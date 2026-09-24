@@ -15,8 +15,12 @@ import {
   Search,
   Lock,
   Check,
-  X
+  X,
+  ZoomIn,
+  Eye,
+  Maximize2
 } from 'lucide-react';
+import jerseyMeasurementGuideImg from '../assets/images/jersey_measurement_1790236031117.jpg';
 import {
   Registration,
   Team,
@@ -79,6 +83,7 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
   const [jerseyName, setJerseyName] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
   const [showAccomplishedModal, setShowAccomplishedModal] = useState(false);
+  const [showMeasurementModal, setShowMeasurementModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // View mode: 'form' (selection & size chart grid) or 'finish' (dedicated Katibayan finish page)
@@ -416,8 +421,57 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
             </h3>
           </div>
           <p className="text-xs text-slate-600 mb-4">
-            Maaari mo nang tingnan ang mga opisyal na sukat (inches) habang inihahanda ang iyong rehistrasyon:
+            Maaari mo nang tingnan ang gabay sa pagsukat at mga opisyal na sukat (inches) habang inihahanda ang iyong rehistrasyon:
           </p>
+
+          {/* Official Jersey Visual Measurement Diagram Card (Now Above Size Chart) */}
+          <div className="mb-4 p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700 text-white flex flex-col sm:flex-row items-center gap-4">
+            <div
+              onClick={() => setShowMeasurementModal(true)}
+              className="relative group cursor-pointer w-28 sm:w-32 h-28 sm:h-32 rounded-xl overflow-hidden bg-white shrink-0 border border-white/20 shadow-md"
+            >
+              <img
+                src={jerseyMeasurementGuideImg}
+                alt="Gabay sa Pagsukat ng Jersey"
+                className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-200"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span className="px-2 py-1 rounded bg-black/80 text-[10px] font-bold text-white flex items-center gap-1">
+                  <ZoomIn className="w-3 h-3 text-[#FFCD00]" /> Palakihin
+                </span>
+              </div>
+            </div>
+            <div className="flex-1 text-left space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#FFCD00] text-slate-950">
+                  Visual Guide
+                </span>
+                <h4 className="text-sm font-black text-white">Paano Sukatin ang Jersey</h4>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Tiyakin ang tamang sukat gamit ang measuring tape (pulgada/inches):
+              </p>
+              <div className="text-[11px] space-y-1">
+                <p className="text-emerald-300 font-semibold flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                  <span><strong>LENGTH:</strong> Sukat mula sa balikat pababa sa laylayan ng damit.</span>
+                </p>
+                <p className="text-amber-300 font-semibold flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                  <span><strong>WIDTH (PAIKOT):</strong> Sukat paikot sa buong dibdib (chest circumference).</span>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMeasurementModal(true)}
+                className="mt-1 text-xs text-[#FFCD00] hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Tingnan ang Malaking Diagram & Detalye →</span>
+              </button>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             {/* Men's Summary */}
@@ -939,7 +993,96 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
                 </div>
               </div>
 
-              {/* Size Table - Positioned right at the top so it aligns with Hakbang 2 on the left */}
+              {/* Official Visual Jersey Measurement Guide (PLACED ABOVE THE SIZE CHART) */}
+              <div className="mb-4">
+                <div className="p-3.5 sm:p-4 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-800 text-white shadow-md relative overflow-hidden">
+                  {/* Subtle top accent bar */}
+                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#0038A8] via-[#FFCD00] to-[#CE1126]" />
+
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    {/* Interactive Jersey Diagram Thumbnail with zoom trigger */}
+                    <div
+                      onClick={() => setShowMeasurementModal(true)}
+                      className="relative group cursor-pointer w-32 sm:w-36 shrink-0 rounded-2xl bg-white p-2 border-2 border-white/20 shadow-lg transition-all hover:border-[#FFCD00]"
+                    >
+                      <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center">
+                        <img
+                          src={jerseyMeasurementGuideImg}
+                          alt="Opisyal na Gabay sa Pagsukat ng Jersey - Length at Width Paikot"
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+                          <span className="p-1.5 rounded-full bg-black/70 text-white shadow-sm">
+                            <ZoomIn className="w-4 h-4 text-[#FFCD00]" />
+                          </span>
+                          <span className="text-[9px] font-black uppercase tracking-wider text-white bg-black/60 px-1.5 py-0.5 rounded">
+                            I-zoom
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between px-0.5">
+                        <span className="text-[9px] font-black uppercase text-slate-800 tracking-wider">
+                          Diagram
+                        </span>
+                        <span className="text-[9px] text-[#0038A8] font-bold flex items-center gap-0.5">
+                          <Maximize2 className="w-2.5 h-2.5" /> Palakihin
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Guide Details & Explanations */}
+                    <div className="flex-1 space-y-2 text-left w-full">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-full bg-[#FFCD00] text-slate-950 font-black text-[10px] uppercase tracking-wider">
+                            Visual Guide
+                          </span>
+                          <h4 className="text-xs sm:text-sm font-black text-white tracking-tight">
+                            Paano Sukatin ang Jersey
+                          </h4>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowMeasurementModal(true)}
+                          className="text-[11px] font-bold text-[#FFCD00] hover:text-amber-200 transition-colors flex items-center gap-1 cursor-pointer bg-white/10 hover:bg-white/15 px-2.5 py-1 rounded-xl"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>I-zoom ang Larawan</span>
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <div className="p-2 rounded-xl bg-white/5 border border-white/10">
+                          <div className="flex items-center gap-1.5 text-emerald-400 font-black uppercase text-[10px] mb-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            <span>LENGTH (Haba ng Damit)</span>
+                          </div>
+                          <p className="text-[11px] text-slate-300 leading-snug font-medium">
+                            Mula sa balikat / kuwelyo pababa sa laylayan (laylay) ng damit.
+                          </p>
+                        </div>
+
+                        <div className="p-2 rounded-xl bg-white/5 border border-white/10">
+                          <div className="flex items-center gap-1.5 text-amber-400 font-black uppercase text-[10px] mb-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#FFCD00]" />
+                            <span>WIDTH (PAIKOT na Lapad)</span>
+                          </div>
+                          <p className="text-[11px] text-slate-300 leading-snug font-medium">
+                            Sukat paikot sa dibdib (chest circumference) gamit ang tape measure.
+                          </p>
+                        </div>
+                      </div>
+
+                      <p className="text-[10px] text-blue-200 leading-tight">
+                        💡 <strong>Tip:</strong> Tingnan ang diagram bago pumili ng sukat sa talahanayan sa ibaba. Kung alanganin, piliin ang mas malaki.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Size Table - Positioned directly below the Visual Measurement Guide */}
               <div className="space-y-4">
                 {/* Men's Size Table */}
                 {chartView === 'Men' && (
@@ -1043,38 +1186,19 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
               </div>
             </div>
 
-            {/* Bottom section: Compact Visual Measurement Guide */}
-            <div className="mt-4 pt-1">
-              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 text-white flex flex-col sm:flex-row items-center gap-4">
-                <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
-                  <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
-                    <path
-                      d="M 30 20 L 42 20 C 44 26, 56 26, 58 20 L 70 20 L 88 34 L 78 46 L 70 40 L 70 85 C 70 87, 68 89, 66 89 L 34 89 C 32 89, 30 87, 30 85 L 30 40 L 22 46 L 12 34 Z"
-                      fill="#1E293B"
-                      stroke="#38BDF8"
-                      strokeWidth="1.5"
-                    />
-                    {chartView === 'Women' ? (
-                      <path d="M 42 20 L 50 32 L 58 20" fill="none" stroke="#F43F5E" strokeWidth="2" />
-                    ) : (
-                      <path d="M 42 20 C 44 26, 56 26, 58 20" fill="none" stroke="#38BDF8" strokeWidth="2" />
-                    )}
-                    <path d="M 28 52 C 40 56, 60 56, 72 52" fill="none" stroke="#FFCD00" strokeWidth="2" />
-                    <line x1="84" y1="22" x2="84" y2="87" stroke="#34D399" strokeWidth="2" />
-                  </svg>
-                </div>
-
-                <div className="text-xs space-y-1">
-                  <div className="flex items-center gap-1.5 text-amber-300 font-bold">
-                    <span className="w-2 h-2 rounded-full bg-[#FFCD00]" />
-                    <span><strong>WIDTH PAIKOT:</strong> Sukat paikot sa dibdib (chest circumference) gamit ang tape measure.</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-emerald-300 font-bold">
-                    <span className="w-2 h-2 rounded-full bg-[#34D399]" />
-                    <span><strong>LENGTH:</strong> Mula sa balikat pababa sa dulo ng damit.</span>
-                  </div>
-                </div>
-              </div>
+            {/* Size Table Footnote & Quick Reference */}
+            <div className="mt-3.5 pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+              <span className="text-[11px] font-medium text-slate-500">
+                Paalala: Lahat ng sukat sa talahanayan ay nakasaad sa <strong>pulgada (inches)</strong>.
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowMeasurementModal(true)}
+                className="text-[11px] font-bold text-[#0038A8] hover:text-blue-800 flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <Maximize2 className="w-3 h-3" />
+                <span>Palakihin ang Gabay sa Pagsukat</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1154,6 +1278,94 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
             >
               <span>Tingnan ang Katibayan (Finish Page) →</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Full-screen Jersey Measurement Guide Modal */}
+      {showMeasurementModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-300 max-w-2xl w-full max-h-[92vh] overflow-y-auto flex flex-col relative animate-in zoom-in-95 duration-200">
+            {/* Top accent gradient */}
+            <div className="h-2.5 bg-gradient-to-r from-[#0038A8] via-[#FFCD00] to-[#CE1126] shrink-0" />
+
+            {/* Modal Header */}
+            <div className="p-4 sm:p-6 pb-3 flex items-center justify-between border-b border-slate-100 shrink-0">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Ruler className="w-5 h-5 text-[#0038A8]" />
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                    Opisyal na Gabay sa Pagsukat ng Jersey
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Laro ng Lahi 2026 • Length (Haba) & Width Paikot (Chest Circumference)
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMeasurementModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 sm:p-6 space-y-4">
+              {/* Full Image Container */}
+              <div className="bg-slate-50 rounded-2xl p-4 sm:p-6 border border-slate-200 flex items-center justify-center">
+                <img
+                  src={jerseyMeasurementGuideImg}
+                  alt="Opisyal na Sukat ng Jersey - Diagram"
+                  className="max-h-[420px] w-auto object-contain rounded-xl shadow-xs"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+
+              {/* Measurement Legend & Explanations */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3.5 rounded-2xl bg-red-50/70 border-2 border-red-200/80">
+                  <div className="flex items-center gap-2 font-black text-red-900 mb-1">
+                    <span className="px-2 py-0.5 rounded-md bg-[#CE1126] text-white text-[10px] uppercase tracking-wider font-mono">
+                      LENGTH
+                    </span>
+                    <span>Haba ng Damit</span>
+                  </div>
+                  <p className="text-slate-700 leading-relaxed font-medium">
+                    Sukat mula sa pinakamataas na punto ng balikat (sa tabi ng kuwelyo) diretso pababa hanggang sa pinakaibaba o laylayan ng damit.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-blue-50/70 border-2 border-blue-200/80">
+                  <div className="flex items-center gap-2 font-black text-blue-900 mb-1">
+                    <span className="px-2 py-0.5 rounded-md bg-[#0038A8] text-white text-[10px] uppercase tracking-wider font-mono">
+                      WIDTH (PAIKOT)
+                    </span>
+                    <span>Lapad Paikot sa Dibdib</span>
+                  </div>
+                  <p className="text-slate-700 leading-relaxed font-medium">
+                    Gamit ang measuring tape, sukatin paikot ang dibdib (circumference) sa ilalim lamang ng manggas sa pinakamalapad na bahagi.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-100 text-slate-700 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2 font-medium">
+                  <Info className="w-4 h-4 text-[#0038A8] shrink-0" />
+                  <span>
+                    Lahat ng sukat sa chart ay nasa <strong>pulgada (inches)</strong>. Piliin ang mas malaking sukat kung nag-aalangan.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowMeasurementModal(false)}
+                  className="px-5 py-2.5 rounded-xl bg-[#0038A8] hover:bg-blue-800 text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs transition-all self-end sm:self-auto"
+                >
+                  Naiintindihan Ko Na ✓
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
