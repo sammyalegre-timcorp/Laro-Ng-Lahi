@@ -26,7 +26,8 @@ import {
   LayoutGrid,
   Clock,
   Edit3,
-  Megaphone
+  Megaphone,
+  UserPlus
 } from 'lucide-react';
 import { Registration, Team, DEFAULT_TEAMS, DEPARTMENTS, normalizeDepartmentName, formatToSurnameFirst, EventConfig, DEFAULT_EVENT_CONFIG, formatDeadlineDisplay, isRegistrationClosedWithConfig } from '../types';
 import { exportToExcel, exportToCSV, getAgeBracket } from '../utils/exportData';
@@ -38,6 +39,7 @@ import { GameRulesGuide } from './GameRulesGuide';
 import { InteractiveFloorPlan } from './InteractiveFloorPlan';
 import { DuplicateResolverModal } from './DuplicateResolverModal';
 import { DeadlineEditorModal } from './DeadlineEditorModal';
+import { AddParticipantModal } from './AddParticipantModal';
 import { subscribeToEventConfig } from '../firebase/eventConfig';
 import {
   updateRegistration,
@@ -73,6 +75,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [isPrintableRosterOpen, setIsPrintableRosterOpen] = useState(false);
   const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false);
   const [isDeadlineModalOpen, setIsDeadlineModalOpen] = useState(false);
+  const [isAddParticipantOpen, setIsAddParticipantOpen] = useState(false);
 
   // Dynamic Deadline & Event Configuration
   const [currentEventConfig, setCurrentEventConfig] = useState<EventConfig>(eventConfig || DEFAULT_EVENT_CONFIG);
@@ -410,6 +413,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
         {/* Primary Action Buttons */}
         <div className="flex flex-wrap items-center gap-2.5">
+          {/* Add Participant Manual Button (Allowed even if registration is closed!) */}
+          <button
+            onClick={() => setIsAddParticipantOpen(true)}
+            className="px-4 py-3 rounded-xl bg-gradient-to-r from-[#00A86B] to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white text-xs font-black uppercase tracking-wider shadow-md hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2 cursor-pointer ring-2 ring-emerald-300/60"
+            title="Magdagdag ng bagong kalahok (Kahit sarado na ang rehistrasyon)"
+          >
+            <UserPlus className="w-4 h-4 text-[#FFCD00]" />
+            <span>+ Magdagdag ng Kalahok</span>
+          </button>
+
           {/* Excel Export */}
           <button
             onClick={() => exportToExcel(registrations)}
@@ -555,7 +568,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-3 w-full md:w-auto shrink-0 relative z-10">
+            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto shrink-0 relative z-10">
+              {/* Quick Add Participant if Closed */}
+              {isClosed && (
+                <button
+                  type="button"
+                  onClick={() => setIsAddParticipantOpen(true)}
+                  className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#00A86B] hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-wider shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2 cursor-pointer border border-emerald-300/40"
+                  title="Admin Override: Magdagdag ng kalahok kahit sarado na ang rehistrasyon"
+                >
+                  <UserPlus className="w-4 h-4 text-[#FFCD00]" />
+                  <span>+ Magdagdag ng Kalahok (Override)</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => setIsDeadlineModalOpen(true)}
@@ -758,15 +784,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           <span>Games & Game Masters</span>
         </button>
 
-        {duplicateGroups.length > 0 && (
+        <div className="flex items-center gap-2 ml-auto">
+          {duplicateGroups.length > 0 && (
+            <button
+              onClick={() => setIsDuplicateResolverOpen(true)}
+              className="px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-wider bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 flex items-center gap-1.5 cursor-pointer"
+            >
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+              <span>Ayusin ang Duplicates ({duplicateGroups.length})</span>
+            </button>
+          )}
+
           <button
-            onClick={() => setIsDuplicateResolverOpen(true)}
-            className="px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-wider bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 flex items-center gap-1.5 cursor-pointer ml-auto"
+            onClick={() => setIsAddParticipantOpen(true)}
+            className="px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white shadow-md hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
+            title="Magdagdag ng bagong kalahok sa database kahit sarado na ang rehistrasyon"
           >
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-            <span>Ayusin ang Duplicates ({duplicateGroups.length})</span>
+            <UserPlus className="w-3.5 h-3.5 text-emerald-200" />
+            <span>+ Magdagdag ng Kalahok</span>
           </button>
-        )}
+        </div>
       </div>
 
       {/* Main Tab Content */}
@@ -944,12 +981,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 {filteredAttendees.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="p-12 text-center text-slate-400">
-                      <div className="max-w-sm mx-auto space-y-2">
+                      <div className="max-w-sm mx-auto space-y-3">
                         <span className="text-4xl block">🔍</span>
                         <p className="font-bold text-slate-700">Walang nahanap na kalahok.</p>
                         <p className="text-xs text-slate-500">
-                          Subukang baguhin ang filter o i-clear ang search term.
+                          Subukang baguhin ang filter o i-clear ang search term, o direktang mag-encode ng kalahok.
                         </p>
+                        <button
+                          type="button"
+                          onClick={() => setIsAddParticipantOpen(true)}
+                          className="mt-2 px-4 py-2.5 rounded-xl bg-[#0038A8] hover:bg-[#002d86] text-white text-xs font-black uppercase tracking-wider inline-flex items-center gap-2 cursor-pointer shadow-md"
+                        >
+                          <UserPlus className="w-4 h-4 text-[#FFCD00]" />
+                          <span>+ Magdagdag ng Kalahok</span>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -1329,6 +1374,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           onSuccessToast={(msg) => {
             showToast(msg);
           }}
+        />
+      )}
+
+      {/* Admin Add Participant Modal (Enabled even if registration is closed!) */}
+      {isAddParticipantOpen && (
+        <AddParticipantModal
+          isOpen={isAddParticipantOpen}
+          onClose={() => setIsAddParticipantOpen(false)}
+          onSuccess={(newAttendee) => {
+            showToast(`Tagumpay! Naidagdag si ${newAttendee.fullName} sa opisyal na listahan. 🎉`);
+          }}
+          allRegistrations={registrations}
+          teams={teams}
+          eventConfig={currentEventConfig}
         />
       )}
     </div>
