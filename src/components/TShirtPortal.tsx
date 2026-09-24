@@ -514,8 +514,8 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
     return (
       <JerseySelectionSuccess
         attendee={currentAttendee}
-        assignedTeamObj={assignedTeamObj || undefined}
-        teamBadgeStyle={teamBadgeStyle}
+        assignedTeamObj={undefined}
+        teamBadgeStyle={null}
         selectedCut={selectedCut}
         selectedSize={selectedSize}
         jerseyName={currentAttendee.jerseyName || jerseyName}
@@ -561,23 +561,10 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
                     <span>Jersey: "{currentAttendee.jerseyName}"</span>
                   </span>
                 )}
-                {assignedTeamObj && teamBadgeStyle && (
-                  <span
-                    className="px-2.5 py-0.5 rounded-full text-xs font-extrabold border inline-flex items-center gap-1.5"
-                    style={teamBadgeStyle}
-                  >
-                    {assignedTeamObj.logoUrl ? (
-                      <img
-                        src={assignedTeamObj.logoUrl}
-                        alt=""
-                        className="w-3.5 h-3.5 object-contain rounded-full shrink-0"
-                      />
-                    ) : (
-                      <span>{assignedTeamObj.iconName || '🏆'}</span>
-                    )}
-                    <span>{assignedTeamObj.name}</span>
-                  </span>
-                )}
+                <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0038A8] border border-blue-200 text-xs font-bold inline-flex items-center gap-1">
+                  <span>🤫</span>
+                  <span>Koponan: Ihahayag sa Palaro</span>
+                </span>
               </div>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
                 {normalizeDepartmentName(currentAttendee.department)} • <span className="text-slate-700">{currentAttendee.email}</span>
@@ -754,7 +741,7 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
                   <div className="w-10 h-2.5 rounded-b-full bg-slate-950/80 border-b border-white/20 mb-2.5" />
                   
                   <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                    <span>{assignedTeamObj ? assignedTeamObj.name : 'TIM CORPO'}</span>
+                    <span>TIM LARO NG LAHI</span>
                     <span>•</span>
                     <span className="text-[#FFCD00]">LIVE BACK PREVIEW</span>
                   </div>
@@ -1248,7 +1235,10 @@ export const TShirtPortal: React.FC<TShirtPortalProps> = ({
               </div>
               <div className="flex items-center justify-between border-b border-slate-200/80 pb-2.5 mb-2.5">
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Koponan:</span>
-                <span className="text-xs font-black text-[#0038A8]">{currentAttendee.assignedTeam || 'Waiting for Team Assignment'}</span>
+                <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                  <span>🤫</span>
+                  <span>Ihahayag sa Opening Ceremony</span>
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Sukat ng Jersey:</span>

@@ -145,8 +145,9 @@ export const RegistrationSuccess: React.FC<RegistrationSuccessProps> = ({
 
             <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 col-span-2 sm:col-span-1">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">Team Status</span>
-              <span className="text-xs font-bold text-[#0038A8] mt-1 block truncate">
-                {registration.assignedTeam || 'Pending Allocation'}
+              <span className="text-xs font-bold text-[#0038A8] mt-1 block truncate flex items-center gap-1">
+                <span>🤫</span>
+                <span>Ihahayag sa Palaro</span>
               </span>
             </div>
           </div>

@@ -167,41 +167,24 @@ export const JerseySelectionSuccess: React.FC<JerseySelectionSuccessProps> = ({
             </div>
           </div>
 
-          {/* Team & Department Highlight */}
+          {/* Participant Details: Department & Confidential Team Status */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">
-                Koponan (Team)
-              </span>
-              {assignedTeamObj && teamBadgeStyle ? (
-                <span
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black border"
-                  style={teamBadgeStyle}
-                >
-                  {assignedTeamObj.logoUrl ? (
-                    <img
-                      src={assignedTeamObj.logoUrl}
-                      alt=""
-                      className="w-4 h-4 object-contain rounded-full shrink-0"
-                    />
-                  ) : (
-                    <span>{assignedTeamObj.iconName || '🏆'}</span>
-                  )}
-                  <span>{assignedTeamObj.name}</span>
-                </span>
-              ) : (
-                <span className="text-xs font-bold text-[#0038A8]">
-                  {attendee.assignedTeam || 'Pending Team Allocation'}
-                </span>
-              )}
-            </div>
-
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">
                 Departamento / Unit
               </span>
               <span className="text-xs font-bold text-slate-800 block truncate">
                 {normalizeDepartmentName(attendee.department)}
+              </span>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-blue-50/60 border border-blue-100">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">
+                Koponan (Team Assignment)
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-blue-200 text-xs font-extrabold text-[#0038A8] shadow-2xs">
+                <span>🤫</span>
+                <span>Ihahayag sa Opening Ceremony</span>
               </span>
             </div>
           </div>
@@ -264,7 +247,7 @@ export const JerseySelectionSuccess: React.FC<JerseySelectionSuccessProps> = ({
               <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#0038A8] via-[#FFCD00] to-[#CE1126]" />
               <div className="w-10 h-3 rounded-b-full bg-slate-950/80 border-b border-white/20 mb-2.5" />
               <span className="text-[10px] tracking-widest text-slate-400 font-semibold uppercase mb-1.5">
-                {assignedTeamObj ? assignedTeamObj.name : 'TIM LARO NG LAHI'}
+                TIM LARO NG LAHI 2026
               </span>
               <div className="font-mono font-black text-base sm:text-lg tracking-widest text-[#FFCD00] uppercase px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 shadow-xs max-w-full truncate my-1">
                 {effectiveJerseyName || 'OFFICIAL JERSEY'}
@@ -460,7 +443,10 @@ export const JerseySelectionSuccess: React.FC<JerseySelectionSuccessProps> = ({
               </div>
               <div className="flex items-center justify-between border-b border-slate-200/80 pb-2 mb-2">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Koponan:</span>
-                <span className="text-xs font-black text-[#0038A8]">{attendee.assignedTeam || 'Pending Allocation'}</span>
+                <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                  <span>🤫</span>
+                  <span>Ihahayag sa Opening Ceremony</span>
+                </span>
               </div>
               {effectiveJerseyName && (
                 <div className="flex items-center justify-between border-b border-slate-200/80 pb-2 mb-2">
